@@ -43,7 +43,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             {
                 $xx = plugins_url('/assets/js/app.js', __FILE__);
                 wp_register_script('ebp_appjs', plugins_url('/assets/js/app.js', __FILE__));
-                wp_register_style('ebp_appcss', plugins_url('/assets/css/app.css', __FILE__), false, null, 'all');
+                wp_register_style('ebp_appcss', plugins_url('/assets/css/app.css', __FILE__), false, "1.0.0", 'all');
             }
             public function ebp_enqueue_style()
             {

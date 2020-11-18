@@ -1,27 +1,28 @@
 //(function () {
-var bundled_products_url = 'bundled-products.json';
-products = preLoadProductData();
-//removeProduct(103);
+console.log("enterted app.js");
+var bundled_products_url = '..\\wp-content\\plugins\\ernaspark-extend-bundle-products\\bundled-products.json';
+var template_url = "..\\wp-content\\plugins\\ernaspark-extend-bundle-products\\template.html";
+var products = preLoadProductData();
 var i = 0;
-$(document).ready(function() {
-    $('#add-article-button').click(function() {
+jQuery(document).ready(function() {
+    jQuery('#add-article-button').click(function() {
         i++;
         console.debug(i);
         addArticleHtml(i);
         addSummaryToggle(i);
         addCancelAction(i);
     });
-    $(function() {
+    jQuery(function() {
         jQuery("#sortable").sortable({
             stop: function(event, ui) {
-                var sorted = $("#sortable").sortable("serialize", {
+                var sorted = jQuery("#sortable").sortable("serialize", {
                     key: "sort",
                 });
                 console.debug(sorted);
             }
         });
-        $("#sortable").disableSelection();
-        $("#sortable").sortable("option", "handle", ".handle")
+        jQuery("#sortable").disableSelection();
+        jQuery("#sortable").sortable("option", "handle", ".handle")
     });
     addExistingArticles();
 
@@ -33,21 +34,21 @@ function preLoadProductData() {
 
 function addSummaryToggle(index) {
     detailsBlockId = '#details-block-' + index;
-    $(detailsBlockId).click(function(event) {
+    jQuery(detailsBlockId).click(function(event) {
         event.preventDefault();
     });
-    $('#summary-button-edit-' + index).click(function() {
+    jQuery('#summary-button-edit-' + index).click(function() {
         console.debug('edit clicked');
-        $(this).closest("details").attr("open", "open");
-        $(this).hide();
-        $(this).parent().find(".summary-remove-button").hide();
+        jQuery(this).closest("details").attr("open", "open");
+        jQuery(this).hide();
+        jQuery(this).parent().find(".summary-remove-button").hide();
     });
 }
 
 function addCancelAction(index) {
-    $("#cancel-" + index).click(function() {
+    jQuery("#cancel-" + index).click(function() {
         console.debug("cancel clicked");
-        detailsSection = $(this).closest("details");
+        detailsSection = jQuery(this).closest("details");
         detailsSection.removeAttr("open");
         detailsSection.find(".summary-remove-button").show();
         detailsSection.find(".summary-edit-button").show();
@@ -62,19 +63,19 @@ function addExistingArticles() {
         addSummaryToggle(articleIndex);
         addCancelAction(articleIndex);
         detailsBlockId = '#details-block-' + articleIndex;
-        $(detailsBlockId).removeAttr("open");
-        $('#summary-title-' + articleIndex).text(product.title);
-        $('#article-title-' + articleIndex).val(product.title);
-        $('#article-name-' + articleIndex).val(product.name);
-        $('#price-' + articleIndex).val(product.price);
-        $('#article-name-' + articleIndex).val(product.name);
-        $('#introductory-text-' + articleIndex).val(product.introText);
-        $('#author-name-' + articleIndex).val(product.authorName);
-        $('#author-title-' + articleIndex).val(product.authorTitle);
-        $('#region-' + articleIndex).val(product.region);
-        $('#publication-date-' + articleIndex).val(product.publicationDate);
-        $('#image-' + articleIndex).val(product.imageUrl);
-        $('#download-' + articleIndex).val(product.downloadUrl);
+        jQuery(detailsBlockId).removeAttr("open");
+        jQuery('#summary-title-' + articleIndex).text(product.title);
+        jQuery('#article-title-' + articleIndex).val(product.title);
+        jQuery('#article-name-' + articleIndex).val(product.name);
+        jQuery('#price-' + articleIndex).val(product.price);
+        jQuery('#article-name-' + articleIndex).val(product.name);
+        jQuery('#introductory-text-' + articleIndex).val(product.introText);
+        jQuery('#author-name-' + articleIndex).val(product.authorName);
+        jQuery('#author-title-' + articleIndex).val(product.authorTitle);
+        jQuery('#region-' + articleIndex).val(product.region);
+        jQuery('#publication-date-' + articleIndex).val(product.publicationDate);
+        jQuery('#image-' + articleIndex).val(product.imageUrl);
+        jQuery('#download-' + articleIndex).val(product.downloadUrl);
 
     });
     i = articleIndex;
@@ -85,26 +86,26 @@ function addArticleHtml(index) {
     temp = "<div id='new_" + index + "'></div>";
     jQuery("#sortable").append(temp);
     newid = "#new_" + index;
-    new_html = loadData("template.html");
+    new_html = loadData(template_url);
     new_html = new_html.replace(/index/g, index);
-    $(newid).append(new_html);
-    $('#remove-' + index).click(function() {
-        index = $(this).attr("name");
+    jQuery(newid).append(new_html);
+    jQuery('#remove-' + index).click(function() {
+        index = jQuery(this).attr("name");
         alert('remove clicked ' + index);
         removeProduct(index);
         removeDetailsBlock(index);
     });
-    $('#summary-button-remove-' + index).click(function() {
-        index = $(this).attr("name");
+    jQuery('#summary-button-remove-' + index).click(function() {
+        index = jQuery(this).attr("name");
         alert('summary button remove clicked ' + index);
         removeProduct(index);
         removeDetailsBlock(index);
     });
-    $("#image-button-" + index).click(function() {
+    jQuery("#image-button-" + index).click(function() {
         console.debug("add image button");
         alert("Wordpress Media selection for Image");
     });
-    $("#download-button-" + index).click(function() {
+    jQuery("#download-button-" + index).click(function() {
         console.debug("add article button");
         alert("Wordpress Media selection for Article");
     });
@@ -112,12 +113,13 @@ function addArticleHtml(index) {
 
 function removeDetailsBlock(index) {
     console.debug("removing details block-" + index);
-    $("#details-block-" + index).remove();
+    jQuery("#details-block-" + index).remove();
 }
 
 function getBundleProducts(productId) {
     console.debug('get bundled products');
-    productList = JSON.parse(loadData(bundled_products_url));
+    var jsonData = loadData(bundled_products_url);
+    productList = JSON.parse(jsonData);
     return productList;
 }
 

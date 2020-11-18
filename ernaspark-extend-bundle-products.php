@@ -36,6 +36,19 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             {
                 add_filter('woocommerce_product_data_tabs', array($this, 'ebp_product_data_tab'), 20);
                 add_action('woocommerce_product_data_panels', array($this, 'ebp_product_data_panel'));
+                add_action('init', array($this, 'ebp_register_script'));
+                add_action('admin_enqueue_scripts', array($this, 'ebp_enqueue_style'));
+            }
+            public function ebp_register_script()
+            {
+                $xx = plugins_url('/assets/js/app.js', __FILE__);
+                wp_register_script('ebp_appjs', plugins_url('/assets/js/app.js', __FILE__));
+                wp_register_style('ebp_appcss', plugins_url('/assets/css/app.css', __FILE__), false, null, 'all');
+            }
+            public function ebp_enqueue_style()
+            {
+                wp_enqueue_script('ebp_appjs');
+                wp_enqueue_style('ebp_appcss');
             }
             public function ebp_product_data_tab($product_data_tabs)
             {
@@ -48,7 +61,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             }
             public function ebp_product_data_panel()
             {
-            ?>
+?>
                 <div id="article_product_data" class="panel woocommerce-options-panel">
                     <?PHP
                     //require_once('template.html');
@@ -56,7 +69,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     ?>
                     <div class="container">
                         <div class="col-xs-10">
-                            <h3>Articles</h3>
                             <div class="form" id="articles-form">
                                 <form action="#">
                                     <div style="width: auto;height: auto; border-style: dotted; padding: 10px;">
@@ -65,7 +77,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                         </div>
                                         <div>
                                             <br>
-                                            <div class="btn btn-default" id="add-article-button" onclick="">Add Article</div>
+                                            <div class="button" id="add-article-button">Add Article</div>
                                             <div id="test-text"></div>
                                             <div class="" id="test"></div>
                                         </div>
@@ -75,7 +87,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         </div>
                     </div>
                 </div>
-            <?php
+<?php
             }
         }
         $GLOBALS['ernaspark-extend-bundle-products'] = new Ernaspark_Extend_Bundle_Products;

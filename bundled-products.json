@@ -1,0 +1,62 @@
+[
+    {
+        "id": "100",
+        "productType": "bundle_product",
+        "title": "World Petroleum Congress 2014",
+        "name": "Responsibly Energising a Growing World",
+        "price": "60",
+        "introText": "Official Publication of the 21st World Petroleum Congress, Moscow, June 2014",
+        "authorName": "none",
+        "authorTitle": "none",
+        "region": "none",
+        "publicationDate": "2014-06-01 00:00:00",
+        "imageUrl": "images\\xxxxxxxxxx",
+        "downloadUrl": "",
+        "order": ""
+    },
+    {
+        "id": "101",
+        "productType": "simple",
+        "title": "Welcome to the Official WPC Congress Publication!",
+        "name": "",
+        "price": "25.00",
+        "introText": "",
+        "authorName": "Renato Bertani",
+        "authorTitle": "President, World Petroleum Council",
+        "region": "Forewords",
+        "publicationDate": "2014-06-01 00:00:00",
+        "imageUrl": "images\\xxxxxxxxxx",
+        "downloadUrl": "files\\xxxxxxxxxx",
+        "order": "1"
+    },
+    {
+        "id": "102",
+        "productType": "simple",
+        "title": "The 'Petroleum Olympics' return to Moscow",
+        "name": "",
+        "price": "30.00",
+        "introText": "",
+        "authorName": "Dr Pierce Riemer",
+        "authorTitle": "Director General, World Petroleum Council",
+        "region": "Forewords",
+        "publicationDate": "2014-06-01 00:00:00",
+        "imageUrl": "images\\xxxxxxxxxx",
+        "downloadUrl": "files\\xxxxxxxxxx",
+        "order": "2"
+    },
+    {
+        "id": "103",
+        "productType": "simple",
+        "title": "How technology led to tectonic shifts in oil and gas supply",
+        "name": "",
+        "price": "0.00",
+        "introText": "",
+        "authorName": "Daniel Yergin",
+        "authorTitle": "Vice-Chairman, IHS",
+        "region": "Strategies and Leadership",
+        "publicationDate": "2014-06-01 00:00:00",
+        "imageUrl": "images\\xxxxxxxxxx",
+        "downloadUrl": "files\\xxxxxxxxxx",
+        "order": "3"
+    }
+]

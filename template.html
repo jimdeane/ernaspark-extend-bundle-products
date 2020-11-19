@@ -1,25 +1,38 @@
 <details id="details-block-index" open style="width: row;height: auto; border-style: dashed">
     <summary>
-        <div class="row align-items-center" style="width: auto">
-            <div class="col-xs-6">
+        <div class="options_group align-items-center" style="width: auto">
+            <div class="">
                 <h4>
                     <p id="summary-title-index">Article Title - index</p>
                 </h4>
             </div>
-            <div class="summary-edit-button col-xs-2 btn btn-default" id="summary-button-edit-index" name="index">Edit</div>
-            <div class="summary-button col-xs-1"></div>
-            <div class="summary-remove-button col-xs-2 btn btn-default" id="summary-button-remove-index" name="index">Remove</div>
-            <span class="summary-button col-xs-1 fas fa-grip-horizontal handle"></span>
+            <div class="summary-edit-button button button-primary" id="summary-button-edit-index" name="index">Edit</div>
+            <div class="summary-button "></div>
+            <div class="summary-remove-button button button-primary" id="summary-button-remove-index" name="index">Remove</div>
+            <span class="dashicons dashicons-list-view ui-sortable-handle handle"></span>
         </div>
     </summary>
-    <div class="" style="width: auto;height: auto; border-style: double; padding: 10px">
-        <div class="" style="width: auto;height: auto; padding: 10px;">
-            <div class="form-group row">
-                <label for="article-title-1" class="col-sm-2 col-form-label"> Article Title</label>
+    <div class="panel-wrap product_data" >
+        <div class="options_group" style="width: auto;height: auto; padding: 10px;">
+            <div class="form-group row form-field">
+                <label for="article-title-index" class="col-sm-2 col-form-label"> Article Title</label>
                 <div class="col-sm-10">
                     <input type="text" class="form-control" name="article-title-index" id="article-title-index">
                 </div>
             </div>
+            <p class="form-field _purchase_note_field">
+                <label for="_purchase_note">Purchase note</label
+                ><span class="woocommerce-help-tip"></span
+                ><textarea
+                  class="short"
+                  style=""
+                  name="_purchase_note"
+                  id="_purchase_note"
+                  placeholder=""
+                  rows="2"
+                  cols="20"
+                ></textarea>
+              </p>
             <div class="form-group row">
                 <label for="article-name-index" class="col-sm-2 col-form-label">Article Name</label>
                 <div class="col-sm-10">
@@ -78,16 +91,16 @@
                     </div>
                 </div>
                 <div class="col-sm-8">
-                    <button type="submit" class="form-control btn btn-default" name="download-index" id="download-button-index">add article file...</button>
+                    <button type="submit" class="form-control button" name="download-index" id="download-button-index">add article file...</button>
                 </div>
             </div>
             <div class="form-group row">
 
                 <div class="col-sm-6"></div>
-                <button type="submit" class="col-sm-2 btn btn-default" name="index" id="save-index">Save</button>
+                <button type="submit" class="col-sm-2 button" name="index" id="save-index">Save</button>
                 <div><img src="#" alt=""></div>
-                <button type="submit" class="col-sm-2 btn btn-default" name="index" id="cancel-index"> Cancel</button>
-                <button type="submit" class="col-sm-2 btn btn-default" name="index" id="remove-index">Remove</button>
+                <button type="submit" class="col-sm-2 button" name="index" id="cancel-index"> Cancel</button>
+                <button type="submit" class="col-sm-2 button" name="index" id="remove-index">Remove</button>
 
             </div>
         </div>

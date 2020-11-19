@@ -38,6 +38,42 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 add_action('woocommerce_product_data_panels', array($this, 'ebp_product_data_panel'));
                 add_action('init', array($this, 'ebp_register_script'));
                 add_action('admin_enqueue_scripts', array($this, 'ebp_enqueue_style'));
+                add_filter('wc_get_template_part', array($this, 'ebp_custom_product_template'), 10, 3);
+                add_action('ebp_product_layout', array($this, 'ebp_product_layout_builder'));
+            }
+            public function ebp_product_layout_builder()
+            {
+                $prod_id = get_the_ID();
+                $_products = get_post_meta($prod_id, 'wcbp_products_addons_values', true);
+                $_products = json_decode($_products);
+                if (!empty($_products)) {
+                    $selection = get_post_meta($prod_id, 'wcbp_product_addons_selection', true); 
+                    echo '<div class="wcbp_product_addons grid">';
+                    echo '    <div class="wcbp_row">';
+
+                    $cols = get_post_meta($prod_id, 'wcbp_grid_columns', true);
+                    $cols = ($cols > 0) ? $cols : 3;
+                    $ids = array();
+                    foreach ($_products as $key => $_product) {
+                        $prod = wc_get_product($_product->id);
+                        $ids[] = $_product->id;
+                        echo '<br>';
+                        echo '<div>' . 'Product id' . $_product->id . '</div>';
+                        echo '<br>';
+                    }
+                    echo '</div></div>';
+                }
+            }
+            public function ebp_custom_product_template($template, $slug, $name)
+            {
+                global $product;
+                $x = is_singular('product');
+                $y = $product->get_type();
+                $z = get_post_meta($product->get_id(), 'wcbp_bundle_prod_layout', true);
+                if (is_singular('product') && 'single-product' === $name && 'content' === $slug && 'bundle_product' === $product->get_type()) {
+                    $template = ES_EBP_DIR . '/includes/content-single-product.php';
+                }
+                return $template;
             }
             public function ebp_register_script()
             {
@@ -61,35 +97,42 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             }
             public function ebp_product_data_panel()
             {
-?>
-                <div id="article_product_data" class="panel woocommerce-options-panel">
-                    <?PHP
-                    //require_once('template.html');
+                global $woocommerce, $post;
+                $post_id = $post->ID;
+                wp_nonce_field('wcbp_bundle_product_nonce', 'wcbp_bundle_product_nonce');
+                echo ''; ?>
+                        <div id="wcbp_custom_product_bundle">
+                            <div class="options_group">
+                                <div id="article_product_data" class="panel woocommerce-options-panel">
+                                    <?PHP
+                                            //require_once('template.html');
 
-                    ?>
-                    <div class="container">
-                        <div class="col-xs-10">
-                            <div class="form" id="articles-form">
-                                <form action="#">
-                                    <div style="width: auto;height: auto; border-style: dotted; padding: 10px;">
-                                        <div style="width:auto" id="sortable">
+                                    ?>
+                                    <div class="container">
+                                        <div class="col-xs-10">
+                                            <div class="form" id="articles-form">
+                                                <form action="#">
+                                                    <div style="width: auto;height: auto; border-style: dotted; padding: 10px;">
+                                                        <div style="width:auto" id="sortable">
 
-                                        </div>
-                                        <div>
-                                            <br>
-                                            <div class="button" id="add-article-button">Add Article</div>
-                                            <div id="test-text"></div>
-                                            <div class="" id="test"></div>
+                                                        </div>
+                                                        <div>
+                                                            <br>
+                                                            <div class="button" id="add-article-button">Add Article</div>
+                                                            <div id="test-text"></div>
+                                                            <div class="" id="test"></div>
+                                                        </div>
+                                                    </div>
+                                                </form>
+                                            </div>
                                         </div>
                                     </div>
-                                </form>
+                                </div>
+
                             </div>
-                        </div>
-                    </div>
-                </div>
-<?php
-            }
-        }
-        $GLOBALS['ernaspark-extend-bundle-products'] = new Ernaspark_Extend_Bundle_Products;
-    }
-};
+                        </div><?PHP
+                                        }
+                                    }
+                                    $GLOBALS['ernaspark-extend-bundle-products'] = new Ernaspark_Extend_Bundle_Products;
+                                }
+                            };

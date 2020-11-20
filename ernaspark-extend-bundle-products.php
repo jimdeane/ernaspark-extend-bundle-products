@@ -47,7 +47,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     wp_enqueue_style('wcbp-bundle-product-style', plugins_url('/assets/css/frontend_styles.css',__FILE__), array(), '1.0' );
                     wp_register_script('masonry', plugins_url('/assets/js/masonry.min.js',__FILE__), array('jquery'), '1.0', true );
                     wp_register_script('matchheight', plugins_url('/assets/js/jquery.matchHeight-min.js',__FILE__), array('jquery'), '1.0', true );
-                    wp_register_script('wcbp-bundle-product', plugins_url('/assets/js/frontend-script.js',__FILE__), array('jquery', 'matchheight', 'masonry'), '1.1', true );
+                    wp_register_script('wcbp-bundle-product', plugins_url('/assets/js/es-frontend-script.js',__FILE__), array('jquery', 'matchheight', 'masonry'), '1.1', true );
                    
                     wp_enqueue_script('wcbp-bundle-product');
                 }
@@ -64,7 +64,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     <table>
                         <tr>
                             <th><?php esc_html_e('Product', 'wc-bundle'); ?></th>
-                            <th><?php esc_html_e('Quantity', 'wc-bundle'); ?></th>
+                            
                         </tr>
                         <?php 
                         $ids = array();
@@ -82,17 +82,15 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     ">
                                     <figure>
                                         <?php 
-                                      //  if ( $this->product_selection($prod_id) ) { 
+                                    
                                             ?>
                                             <span>
                                                 <input type="checkbox" name="prod_<?php echo esc_attr($prod->get_id()); ?>" id="cp_prod_<?php echo esc_attr($prod->get_id()); ?>" data-product-id="<?php echo esc_attr($prod->get_id()); ?>">
                                                 <label class="wcbp_cbx" for="cp_prod_<?php echo esc_attr($prod->get_id()); ?>"><span>
-                                                <svg width="12px" height="10px" viewbox="0 0 12 10">
-                                                  <polyline points="1.5 6 4.5 9 10.5 1"></polyline>
-                                                </svg></span><span></span></label>
+                                                </span></label>
                                             </span>
                                             <?php 
-                                        //} 
+                                      
                                         if ( has_post_thumbnail($prod->get_id()) ) {
                                             echo get_the_post_thumbnail($prod->get_id());
                                         } else {
@@ -136,7 +134,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                             'min_value'   => apply_filters( 'woocommerce_quantity_input_min', $prod->get_min_purchase_quantity(), $prod ),
                                             'max_value'   => apply_filters( 'woocommerce_quantity_input_max', $prod->get_max_purchase_quantity(), $prod ),
                                             'input_value' => $qty,
-                                        ));
+                                        ),null, false);
                                     } 
                                     ?>
                                 </td>

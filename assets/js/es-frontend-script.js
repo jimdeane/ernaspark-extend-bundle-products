@@ -2,14 +2,14 @@ function wcpb_may_be_disable_btn(){
 	jQuery(".product-type-bundle_product .cart").addClass("wcbp_bottom");
 	if(jQuery('#wcbp_product_bundle_ids').val())
 	var items=jQuery('#wcbp_product_bundle_ids').val().split(',').length;
-	var qty = 0;
-	jQuery('.wcbp_product_addons .wcbp_loop').each(function( index ) {
-		if (jQuery(this).find( '[type=checkbox]' ).is(':checked') && wcbp.options.selection ==true){
-			qty += Number(jQuery(this).find('.quantity .qty').val());
-		}else{
-			qty += Number(jQuery(this).find('.quantity .qty').val());
-		}
-	});
+	var qty = 1;
+	// jQuery('.wcbp_product_addons .wcbp_loop').each(function( index ) {
+	// 	if (jQuery(this).find( '[type=checkbox]' ).is(':checked') && wcbp.options.selection ==true){
+	// 		qty += Number(jQuery(this).find('.quantity .qty').val());
+	// 	}else{
+	// 		qty += Number(jQuery(this).find('.quantity .qty').val());
+	// 	}
+	// });
 	//console.log( qty );
 	if(jQuery('#wcbp_product_bundle_ids').val()!="" && (parseInt(wcbp.options.bundle_min)<=parseInt(items)) 
 	&& (parseInt(wcbp.options.products_minimum_qty)<=parseInt(qty))	
@@ -41,9 +41,9 @@ jQuery(document).ready(function($){
 		var qty=1;
 		if(jQuery('#wcbp_product_bundle_ids').val()){ 
 			var ids = jQuery('#wcbp_product_bundle_ids').val().split(',');
-			if(wcbp.options.pricing!=="fixed_pricing"){
-				if(wcbp.options.pricing==="per_product_bundle")
-					price=parseFloat(wcbp.options.bundle_price);
+			//if(wcbp.options.pricing!=="fixed_pricing"){
+				//if(wcbp.options.pricing==="per_product_bundle")
+				//	price=parseFloat(wcbp.options.bundle_price);
 				jQuery.each(ids,function(key,item){ 
 					if(wcbp.options[item] && wcbp.options[item].price){
 						temp=wcbp.options[item].price; 
@@ -60,7 +60,7 @@ jQuery(document).ready(function($){
 					}
 				});
 				jQuery('.wcpb_bundle_total').show();
-			}
+			//}
 		}else{
 			if(wcbp.options.pricing!=="fixed_pricing"){
 				if(wcbp.options.pricing==="per_product_bundle")

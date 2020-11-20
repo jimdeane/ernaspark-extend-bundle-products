@@ -40,6 +40,17 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 add_action('admin_enqueue_scripts', array($this, 'ebp_enqueue_style'));
                 add_filter('wc_get_template_part', array($this, 'ebp_custom_product_template'), 10, 3);
                 add_action('ebp_product_layout', array($this, 'ebp_product_layout_builder'));
+                add_action('wp_enqueue_scripts', array($this, 'enqueue_front_scripts'));
+            }
+            public function enqueue_front_scripts() {
+                if ( is_product() ) {
+                    wp_enqueue_style('wcbp-bundle-product-style', plugins_url('/assets/css/frontend_styles.css',__FILE__), array(), '1.0' );
+                    wp_register_script('masonry', plugins_url('/assets/js/masonry.min.js',__FILE__), array('jquery'), '1.0', true );
+                    wp_register_script('matchheight', plugins_url('/assets/js/jquery.matchHeight-min.js',__FILE__), array('jquery'), '1.0', true );
+                    wp_register_script('wcbp-bundle-product', plugins_url('/assets/js/frontend-script.js',__FILE__), array('jquery', 'matchheight', 'masonry'), '1.1', true );
+                   
+                    wp_enqueue_script('wcbp-bundle-product');
+                }
             }
             public function ebp_product_layout_builder()
             {
@@ -47,22 +58,162 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $_products = get_post_meta($prod_id, 'wcbp_products_addons_values', true);
                 $_products = json_decode($_products);
                 if (!empty($_products)) {
-                    $selection = get_post_meta($prod_id, 'wcbp_product_addons_selection', true); 
-                    echo '<div class="wcbp_product_addons grid">';
-                    echo '    <div class="wcbp_row">';
-
-                    $cols = get_post_meta($prod_id, 'wcbp_grid_columns', true);
-                    $cols = ($cols > 0) ? $cols : 3;
-                    $ids = array();
-                    foreach ($_products as $key => $_product) {
-                        $prod = wc_get_product($_product->id);
-                        $ids[] = $_product->id;
-                        echo '<br>';
-                        echo '<div>' . 'Product id' . $_product->id . '</div>';
-                        echo '<br>';
-                    }
-                    echo '</div></div>';
+                    $selection=get_post_meta($prod_id, 'wcbp_product_addons_selection', true);
+                    ?>
+                    <div class="wcbp_product_addons table">
+                    <table>
+                        <tr>
+                            <th><?php esc_html_e('Product', 'wc-bundle'); ?></th>
+                            <th><?php esc_html_e('Quantity', 'wc-bundle'); ?></th>
+                        </tr>
+                        <?php 
+                        $ids = array();
+                        foreach ( $_products as $key => $_product ) {
+                            $prod=wc_get_product($_product->id); 
+                            $ids[]=$_product->id; 
+                            ?>
+                            <tr class="wcbp_loop">
+                                <td><div class="wcbp_prod_addon 
+                                    <?php 
+                                    if (!$prod->is_in_stock()) {
+                                        echo 'check_box_disabled'; 
+                                    }
+                                    ?>
+                                    ">
+                                    <figure>
+                                        <?php 
+                                      //  if ( $this->product_selection($prod_id) ) { 
+                                            ?>
+                                            <span>
+                                                <input type="checkbox" name="prod_<?php echo esc_attr($prod->get_id()); ?>" id="cp_prod_<?php echo esc_attr($prod->get_id()); ?>" data-product-id="<?php echo esc_attr($prod->get_id()); ?>">
+                                                <label class="wcbp_cbx" for="cp_prod_<?php echo esc_attr($prod->get_id()); ?>"><span>
+                                                <svg width="12px" height="10px" viewbox="0 0 12 10">
+                                                  <polyline points="1.5 6 4.5 9 10.5 1"></polyline>
+                                                </svg></span><span></span></label>
+                                            </span>
+                                            <?php 
+                                        //} 
+                                        if ( has_post_thumbnail($prod->get_id()) ) {
+                                            echo get_the_post_thumbnail($prod->get_id());
+                                        } else {
+                                            echo '<img src="' . esc_url(WC_UBP_URL . 'assets/images/placeholder.png') . '" >';
+                                        }
+                                        ?>
+                                    </figure>
+                                    <div class="details">
+                                        <span class="wcbp-title"><a href="
+                                        <?php  
+                                        if ( get_post_meta($prod_id, 'wcbp_disable_bundle_tems_link', true) == 'no') {
+                                            echo esc_url(get_the_permalink($prod->get_id()));
+                                        } else {
+                                            echo 'javascript:void(0);';
+                                        }
+                                        ?>
+                                        "><?php echo esc_html($prod->get_name()); ?></a></span>
+                                        <?php //if ( $this->show_price($prod_id) ) { ?>
+                                        <span class="wcbp-price"><?php echo esc_html(get_woocommerce_currency_symbol()); ?><span class="price"><?php echo esc_html(number_format($prod->get_price(), 2, '.', '')); ?></span></span>
+                                            <?php
+                                        //}
+                                        
+                                        if ( !$prod->is_in_stock() ) {
+                                            ?>
+                                            <p class="stock out-of-stock">
+                                                <?php esc_html_e('Out of stock', 'wc-bundle'); ?>
+                                            </p>
+                                        <?php } ?>
+                                    </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <?php 
+                                    $qty = $prod->get_min_purchase_quantity();
+                                    if ( isset( $_POST['wcbp_bundle_products_nonce'] ) && wp_verify_nonce( wc_clean($_POST['wcbp_bundle_products_nonce']), 'wcbp_bundle_products_nonce' ) ) {
+                                        $qty = isset( $_POST['quantity'] ) ? wc_stock_amount( $_POST['quantity'] ) : $prod->get_min_purchase_quantity();
+                                    }
+                                    if ( $prod->is_purchasable() && $prod->is_in_stock() ) {
+                                        woocommerce_quantity_input( array(
+                                            'input_name'  => 'product_' . $prod->get_id(),
+                                            'min_value'   => apply_filters( 'woocommerce_quantity_input_min', $prod->get_min_purchase_quantity(), $prod ),
+                                            'max_value'   => apply_filters( 'woocommerce_quantity_input_max', $prod->get_max_purchase_quantity(), $prod ),
+                                            'input_value' => $qty,
+                                        ));
+                                    } 
+                                    ?>
+                                </td>
+                            </tr>
+                        <?php } ?>
+                    </table>
+                    <?php 
+                    if ( 'yes' == $selection ) { 
+                        ?>
+                        <input type="hidden" name="wcbp_product_bundle_ids" value="" id="wcbp_product_bundle_ids">
+                    <?php } else { ?>
+                        <input type="hidden" name="wcbp_product_bundle_ids" value="<?php echo esc_html(implode(',', $ids)); ?>" id="wcbp_product_bundle_ids">
+                        <?php 
+                    } 
+                        $this->wcbp_get_price_html($prod_id); 
+                        //echo 'where the price goes';
+                    ?>
+                    </div>
+                    <?php
+                } else {
+                    echo '<p>' . esc_html__('Product addons not available', 'wc-bundle') . '</p>';
                 }
+            }
+            public function wcbp_get_price_html( $product_id ) {
+                $_product=wc_get_product($product_id); 
+                $price=0;
+                $selection=get_post_meta($product_id, 'wcbp_product_addons_selection', true);
+                $price_type=get_post_meta($product_id, 'wcbp_bundle_prod_pricing', true);
+                if ( 'fixed_pricing' == $price_type ) {
+                    $price=$_product->get_price();
+                } elseif ( 'per_product_bundle' == $price_type ) {
+                    $price=$_product->get_price();
+                    $_products=get_post_meta($product_id, 'wcbp_products_addons_values', true);
+                    $_products=json_decode($_products);
+                    if ( !empty($_products) && 'yes' !== $selection ) {
+                        foreach ( $_products as $item_id ) {
+                            $item=wc_get_product($item_id->id);
+                            $price+=$item->get_price();
+                        }
+                    }
+                } else {
+                    $price=0;
+                } 
+                ?>
+                <div class="wcpb_bundle_total">
+                    <?php wp_nonce_field( 'wcbp_bundle_products_nonce', 'wcbp_bundle_products_nonce' ); ?>
+                    
+                    
+                    <?php 
+                    $is_in_stock = false;
+                    $ids_product = get_post_meta($product_id, 'wcbp_products_addons_values', true);
+                    $ids_product = json_decode($ids_product);
+                     
+                    foreach ($ids_product as $id_product) {
+                        $_product = wc_get_product( $id_product->id );
+                        if (! $_product->is_in_stock() ) {
+                            $is_in_stock = true;
+                        }
+                        
+                    }
+                    
+                    if ( $is_in_stock ) {
+                        ?>
+                    <!--<p class="stock out-of-stock">
+                        <?php esc_html_e('Out of stock', 'wc-bundle'); ?></p>--->
+                        <?php 
+                    } else {
+                        ?>
+                    <p class="price wcpb_bundle_price"> 
+                        <?php 
+                        esc_html_e('Bundle Total : ', 'wc-bundle');
+                        echo esc_html(get_woocommerce_currency_symbol()) . '<span class="wcpb_bundle_price">' . esc_html(number_format($price, 2)) . '</span>'; 
+                        ?>
+                    </p>
+                    <?php } ?>
+                </div>
+                <?php
             }
             public function ebp_custom_product_template($template, $slug, $name)
             {
@@ -101,38 +252,38 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $post_id = $post->ID;
                 wp_nonce_field('wcbp_bundle_product_nonce', 'wcbp_bundle_product_nonce');
                 echo ''; ?>
-                        <div id="wcbp_custom_product_bundle">
-                            <div class="options_group">
-                                <div id="article_product_data" class="panel woocommerce-options-panel">
-                                    <?PHP
-                                            //require_once('template.html');
+                <div id="wcbp_custom_product_bundle">
+                    <div class="options_group">
+                        <div id="article_product_data" class="panel woocommerce-options-panel">
+                            <?PHP
+                            //require_once('template.html');
 
-                                    ?>
-                                    <div class="container">
-                                        <div class="col-xs-10">
-                                            <div class="form" id="articles-form">
-                                                <form action="#">
-                                                    <div style="width: auto;height: auto; border-style: dotted; padding: 10px;">
-                                                        <div style="width:auto" id="sortable">
+                            ?>
+                            <div class="container">
+                                <div class="col-xs-10">
+                                    <div class="form" id="articles-form">
+                                        <form action="#">
+                                            <div style="width: auto;height: auto; border-style: dotted; padding: 10px;">
+                                                <div style="width:auto" id="sortable">
 
-                                                        </div>
-                                                        <div>
-                                                            <br>
-                                                            <div class="button" id="add-article-button">Add Article</div>
-                                                            <div id="test-text"></div>
-                                                            <div class="" id="test"></div>
-                                                        </div>
-                                                    </div>
-                                                </form>
+                                                </div>
+                                                <div>
+                                                    <br>
+                                                    <div class="button" id="add-article-button">Add Article</div>
+                                                    <div id="test-text"></div>
+                                                    <div class="" id="test"></div>
+                                                </div>
                                             </div>
-                                        </div>
+                                        </form>
                                     </div>
                                 </div>
-
                             </div>
-                        </div><?PHP
-                                        }
-                                    }
-                                    $GLOBALS['ernaspark-extend-bundle-products'] = new Ernaspark_Extend_Bundle_Products;
-                                }
-                            };
+                        </div>
+
+                    </div>
+                </div><?PHP
+                    }
+                }
+                $GLOBALS['ernaspark-extend-bundle-products'] = new Ernaspark_Extend_Bundle_Products;
+            }
+        };

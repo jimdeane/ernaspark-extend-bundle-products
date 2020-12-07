@@ -79,12 +79,12 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     <div style="display:flex; flex-direction: row;width: 100%">
                                         <div class="details">
                                             <span class="wcbp-title"><a href="<?php
-                                                                                if (get_post_meta($prod_id, 'wcbp_disable_bundle_tems_link', true) == 'no') {
-                                                                                    echo esc_url(get_the_permalink($prod->get_id()));
-                                                                                } else {
-                                                                                    echo 'javascript:void(0);';
-                                                                                }
-                                                                                ?>
+                                                    if (get_post_meta($prod_id, 'wcbp_disable_bundle_tems_link', true) == 'no') {
+                                                        echo esc_url(get_the_permalink($prod->get_id()));
+                                                    } else {
+                                                        echo 'javascript:void(0);';
+                                                    }
+                                                    ?>
                                                     "><?php echo esc_html($prod->get_name()); ?></a></span>
 
                                             <div>Article Intro Text</div>

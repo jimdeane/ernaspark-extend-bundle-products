@@ -46,7 +46,16 @@ if (post_password_required()) {
 		<div>
 			<div>
 				<div>
+					<?PHP 				
+				
+					$terms = wp_get_post_terms($product->get_id(),"product_cat");
+					foreach ($terms as &$value) {
+						echo($value->name);
+					}
+
+					// get the prodcut category ?>
 					<h4>Printed Report</h4> 
+					<h4>Printed Publication</h4>
 					<div>SpecialistReportName</div>
 					<div>SpecialistReportTitle</div>
 					<div>SpecialistReportIntroText</div>
@@ -84,7 +93,7 @@ if (post_password_required()) {
 								} ?>
 							</div>
 						</div>
-					</div>
+					</div>;
 				</div>
 			</div>
 

@@ -46,16 +46,25 @@ if (post_password_required()) {
 		<div>
 			<div>
 				<div>
-					<?PHP 				
-				
+					<?PHP 	
 					$terms = wp_get_post_terms($product->get_id(),"product_cat");
-					foreach ($terms as &$value) {
-						echo($value->name);
+					$caption = "<h4>No product category set</h4>";
+					$countOfCategories = 0;
+					foreach($terms as $category){
+						if($category->name == "Publications"){
+							$countOfCategories++;
+							$caption = "<h4>Printed Publication</h4>";
+						}
+						if($category->name == "Reports"){
+							$countOfCategories++;
+							$caption = "<h4>Printed Report</h4>";
+						}
 					}
-
-					// get the prodcut category ?>
-					<h4>Printed Report</h4> 
-					<h4>Printed Publication</h4>
+					if($countOfCategories > 1){
+						$caption = "<h4>Both Publication and Report categories set!</h4>";
+					}
+					echo($caption);						
+					?>
 					<div>SpecialistReportName</div>
 					<div>SpecialistReportTitle</div>
 					<div>SpecialistReportIntroText</div>

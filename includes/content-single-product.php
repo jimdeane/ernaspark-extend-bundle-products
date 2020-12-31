@@ -65,14 +65,20 @@ if (post_password_required()) {
 					}
 					echo($caption);						
 					?>
-					<div>SpecialistReportName</div>
-					<div>SpecialistReportTitle</div>
-					<div>SpecialistReportIntroText</div>
+					<div>
+					<?PHP echo($product->get_name()); ?>
+					</div>
 					
+					<div>
+					<div>
+					<?PHP echo($product->get_description()); ?>
+					</div>
+					<?PHP echo($product->get_short_description()); ?>
+					</div>
 					<?PHP echo wp_kses_post(wc_get_stock_html($product)); ?>
 					<div class="wcbp_bottom">
-						<span>Price : £100.00</span>
-
+						<span>Price : <?PHP echo(get_woocommerce_currency_symbol());echo(number_format($product->get_regular_price(),2,'.',''));  ?></span>
+						
 					</div>
 					<div  style="display: flex; flex-direction: column;">
 						<h4>Individual Articles for Download</h4>

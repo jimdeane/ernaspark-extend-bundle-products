@@ -66,6 +66,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         foreach ($_products as $key => $_product) {
                             $prod = wc_get_product($_product->id);
                             $ids[] = $_product->id; ?>
+                            <div class="es_article_region" ><?PHP echo(get_post_meta( $_product->id, 'article_region', true ));  ?></div>
                             <div class="wcbp_prod_addon " style="display: flex; flex-direction: row;">
                                 <div style="width: 100px;">
                                     <?php
@@ -79,19 +80,20 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     <div style="display:flex; flex-direction: row;width: 100%">
                                         <div class="details">
                                             <span class="wcbp-title"><a href="<?php
-                                                    if (get_post_meta($prod_id, 'wcbp_disable_bundle_tems_link', true) == 'no') {
-                                                        echo esc_url(get_the_permalink($prod->get_id()));
-                                                    } else {
-                                                        echo 'javascript:void(0);';
-                                                    }
-                                                    ?>
-                                                    "><?php echo esc_html($prod->get_name()); ?></a></span>
-
-                                            <div>Article Intro Text</div>
-
+                                            if (get_post_meta($prod_id, 'wcbp_disable_bundle_tems_link', true) == 'no') {
+                                                echo esc_url(get_the_permalink($prod->get_id()));
+                                            } else {
+                                                echo 'javascript:void(0);';
+                                            }
+                                            ?>
+                                            "><?php echo esc_html($prod->get_name()); ?></a></span>
+                                            <div class="es_author_name"><?PHP $aa = get_post_meta( $_product->id, 'author_name', true );?></div>
+                                            <div class="es_article_description"><?PHP echo($prod->get_description());  ?></div>
+                                            <div class="es_article_author_name"><?PHP echo(get_post_meta( $_product->id, 'author_name', true ));  ?></div>
+                                            <div class="es_author_positon"><?PHP echo(get_post_meta( $_product->id, 'author_position', true ));  ?></div>
                                             <span class="wcbp-price"><?php echo esc_html(get_woocommerce_currency_symbol()); ?><span class="price"><?php echo esc_html(number_format($prod->get_price(), 2, '.', '')); ?></span></span>
                                             <input type="checkbox" name="prod_<?php echo esc_attr($prod->get_id()); ?>" id="cp_prod_<?php echo esc_attr($prod->get_id()); ?>" data-product-id="<?php echo esc_attr($prod->get_id()); ?>">
-                                            <span>Select</span>
+                                            <span class="es_article_select">Select</span>
                                         </div>
                                     </div>
                                 <?php

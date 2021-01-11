@@ -1,8 +1,8 @@
 //(function () {
-console.log("enterted app.js");
+console.log("entered app.js");
 var bundled_products_url = '..\\wp-content\\plugins\\ernaspark-extend-bundle-products\\bundled-products.json';
 var template_url = "..\\wp-content\\plugins\\ernaspark-extend-bundle-products\\template.html";
-var products = preLoadProductData();
+var products = getBundleProducts();
 var i = 0;
 jQuery(document).ready(function() {
     jQuery('#add-article-button').click(function() {
@@ -28,9 +28,7 @@ jQuery(document).ready(function() {
 
 });
 
-function preLoadProductData() {
-    return getBundleProducts();
-}
+
 
 function addSummaryToggle(index) {
     detailsBlockId = '#details-block-' + index;
@@ -118,9 +116,25 @@ function removeDetailsBlock(index) {
 
 function getBundleProducts(productId) {
     console.debug('get bundled products');
-    var jsonData = loadData(bundled_products_url);
-    productList = JSON.parse(jsonData);
-    return productList;
+    var productList;
+    jQuery.ajax( {
+	    url: ebpadmin.ajaxurl,
+        async: false,
+	    dataType: 'json',
+        type : 'get',
+	    delay: 250,
+	    data: {	                    
+	        action: 'ebp_get_articles'
+	    },
+        success: function(data, status) {
+            var jsonData = data;
+            productList = data; //JSON.parse(jsonData); 
+            console.log(productList);           
+        },
+        cache: false
+	  });
+    console.log(productList);
+    return productList;    
 }
 
 function removeProduct(productId) {
@@ -129,11 +143,11 @@ function removeProduct(productId) {
     products = products.filter(product => product.id != productId);
     console.debug('removed' + JSON.stringify(products));
 }
-
 function loadData(href) {
     var xmlhttp = new XMLHttpRequest();
     xmlhttp.open("GET", href, false);
     xmlhttp.send();
     return xmlhttp.responseText;
 };
+
 //})();

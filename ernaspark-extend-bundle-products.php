@@ -34,16 +34,56 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
         {
             public function __construct()
             {
+                add_action('wp_ajax_ebp_get_articles', array($this, 'ebp_get_articles_for_product'));
+
                 add_filter('woocommerce_product_data_tabs', array($this, 'ebp_product_data_tab'), 20);
                 add_action('woocommerce_product_data_panels', array($this, 'ebp_product_data_panel'));
                 add_action('init', array($this, 'ebp_register_script'));
                 add_action('admin_enqueue_scripts', array($this, 'ebp_enqueue_style'));
                 add_filter('wc_get_template_part', array($this, 'ebp_custom_product_template'), 10, 3);
                 add_action('ebp_product_layout', array($this, 'ebp_product_layout_builder'));
-                add_action('wp_enqueue_scripts', array($this, 'enqueue_front_scripts'));
+                add_action('wp_enqueue_scripts', array($this, 'enqueue_front_scripts')); 
+               
             }
-            public function enqueue_front_scripts()
-            {
+
+            public function ebp_get_articles_for_product() {
+                $prod_id = 5736; // get_the_ID();
+                $_products = get_post_meta($prod_id, 'wcbp_products_addons_values', true);
+                $_products = json_decode($_products);
+                $arr = array();
+                if (!empty($_products)) {
+                    $selection = get_post_meta($prod_id, 'wcbp_product_addons_selection', true);
+                    $ids = array();
+                    foreach ($_products as $key => $_product) {
+                        $id = $_product->id;
+                        $prod = wc_get_product($_product->id);
+                        $ids[] = $_product->id; 
+                        $title = $prod->get_title();
+                        $name = $prod->get_name(); 
+                        $short = $prod->get_short_description();                         
+                        $region = get_post_meta( $_product->id, 'article_region', true );
+                        $desc = $prod->get_description();
+                        $authorName = get_post_meta( $_product->id, 'author_name', true );  
+                        $authorPosition = get_post_meta( $_product->id, 'author_position', true );                        
+                        $price = $prod->get_price();                            
+                        array_push( $arr, array('id' => $id, 
+                                                'ttile' => $title, 
+                                                'name'=> $name, 
+                                                'short'=> $short, 
+                                                'region'=> $region, 
+                                                'desc'=> $desc, 
+                                                'authorName'=> $authorName, 
+                                                'authorPosition', $authorPosition,
+                                                'price'=> $price ));
+                    }
+                }                
+                
+                // $arr = array('id'=>1, 'name'=>'name');
+                echo json_encode($arr);
+                die();
+            }
+
+            public function enqueue_front_scripts() {
                 if (is_product()) {
                     wp_enqueue_style('wcbp-bundle-product-style', plugins_url('/assets/css/frontend_styles.css', __FILE__), array(), '1.0');
                     wp_register_script('masonry', plugins_url('/assets/js/masonry.min.js', __FILE__), array('jquery'), '1.0', true);
@@ -206,12 +246,15 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             {
                 $xx = plugins_url('/assets/js/app.js', __FILE__);
                 wp_register_script('ebp_appjs', plugins_url('/assets/js/app.js', __FILE__));
+                wp_localize_script('ebp_appjs', 'ebpadmin', array(
+					'ajaxurl'	=>	admin_url('admin-ajax.php')
+				));
                 wp_register_style('ebp_appcss', plugins_url('/assets/css/app.css', __FILE__), false, "1.0.0", 'all');
             }
             public function ebp_enqueue_style()
             {
-                wp_enqueue_script('ebp_appjs');
                 wp_enqueue_style('ebp_appcss');
+                wp_enqueue_script('ebp_appjs');               
             }
             public function ebp_product_data_tab($product_data_tabs)
             {
@@ -220,6 +263,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     'target' => 'article_product_data',
                     'class'  => array()
                 );
+                unset($product_data_tabs['wcbp_bundle']);
                 return $product_data_tabs;
             }
             public function ebp_product_data_panel()

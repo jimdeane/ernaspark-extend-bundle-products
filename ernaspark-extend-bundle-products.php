@@ -65,16 +65,19 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         $desc = $prod->get_description();
                         $authorName = get_post_meta( $_product->id, 'author_name', true );  
                         $authorPosition = get_post_meta( $_product->id, 'author_position', true );                        
-                        $price = $prod->get_price();                            
+                        $price = $prod->get_price();   
+                        $downloadUrl = $prod->get_downloads();                        
                         array_push( $arr, array('id' => $id, 
-                                                'ttile' => $title, 
+                                                'title' => $title, 
                                                 'name'=> $name, 
                                                 'short'=> $short, 
                                                 'region'=> $region, 
-                                                'desc'=> $desc, 
+                                                'introText'=> $desc, 
                                                 'authorName'=> $authorName, 
-                                                'authorPosition', $authorPosition,
-                                                'price'=> $price ));
+                                                'authorTitle' => $authorPosition,
+                                                'price'=> $price,
+                                                'publicationDate' => '20210110',
+                                                'downloadUrl' => $downloadUrl ));
                     }
                 }                
                 

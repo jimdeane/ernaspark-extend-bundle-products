@@ -12,7 +12,7 @@
             <span class="dashicons dashicons-list-view ui-sortable-handle handle"></span>
         </div>
     </summary>
-    <div class="panel-wrap product_data" >
+    <div class="panel-wrap product_data">
         <div class="options_group" style="width: auto;height: auto; padding: 10px;">
             <div class="form-group row form-field">
                 <label for="article-title-index" class="col-sm-2 col-form-label"> Article Title</label>
@@ -20,19 +20,11 @@
                     <input type="text" class="form-control" name="article-title-index" id="article-title-index">
                 </div>
             </div>
-            <p class="form-field _purchase_note_field">
-                <label for="_purchase_note">Purchase note</label
-                ><span class="woocommerce-help-tip"></span
-                ><textarea
-                  class="short"
-                  style=""
-                  name="_purchase_note"
-                  id="_purchase_note"
-                  placeholder=""
-                  rows="2"
-                  cols="20"
-                ></textarea>
-              </p>
+            <div class="form-group row">
+                <label for="purchase_note-index" class="col-sm-2 col-form-label">Purchase note</label>            
+                <textarea class="form-control" style="" name="purchase_note-index" id="purchase_note-index" placeholder="" >
+                </textarea>
+            </div>
             <div class="form-group row">
                 <label for="article-name-index" class="col-sm-2 col-form-label">Article Name</label>
                 <div class="col-sm-10">
@@ -75,30 +67,21 @@
                     <input type="text" class="form-control" name="publication-date-index" id="publication-date-index">
                 </div>
             </div>
-            <div class="form-group row">
-                <label for="image-index" class="col-sm-2 col-form-label">Image</label>
-                <div class="col-sm-2" style="border: double;height: 50px"><img src="#" alt="" style="height: 50px;"></div>
-                <div class="col-sm-8">
-                    <button type="text" class="form-control btn btn-default" name="image-index" id="image-button-index">add article...</button>
-                </div>
+<!--
+            <label for="download-button-index">Choose Article file</label>
+            <p>Selected file </p><a id="filename-index" href="#"></a>
+            <div class="col-sm-8">
+                <input type="file" class="form-control button" name="download-index" id="download-button-index" accept=".pdf">
             </div>
-            <div class="form-group row" style="height: 50px">
-                <label for="image-index" class="col-sm-2 col-form-label">Article</label>
-                <div class="col-sm-2" style="border: double;height: 50px">
-                    <div class="row" style="height: inherit">
-                        <img src="images\acrobat.png" alt="" style="height: inherit;">
-                        <p>articlefilename.pdf</p>
-                    </div>
-                </div>
-                <div class="col-sm-8">
-                    <button type="submit" class="form-control button" name="download-index" id="download-button-index">add article file...</button>
-                </div>
+-->
+            <div>
+                <input id="upload_image_button-index" type="button" class="button upload_image_button" value="image" />
+                <input type='hidden' name='image_attachment_id' id='id-index' />
+                <input type="submit" name="submit_image_selector" value="Save" class="button-primary" />
             </div>
             <div class="form-group row">
-
                 <div class="col-sm-6"></div>
                 <button type="submit" class="col-sm-2 button" name="index" id="save-index">Save</button>
-                <div><img src="#" alt=""></div>
                 <button type="submit" class="col-sm-2 button" name="index" id="cancel-index"> Cancel</button>
                 <button type="submit" class="col-sm-2 button" name="index" id="remove-index">Remove</button>
 

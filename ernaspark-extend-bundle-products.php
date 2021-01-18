@@ -47,21 +47,40 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             }           
             public function ebp_add_product () {
                 $prod_id;
+                $summary_title 	        =  $_POST['summary_title'];
+                $article_title          =  $_POST['article_title'];
+                $articlename            =  $_POST['articlename'];
+                $price                  =  $_POST['price'];
+                $introductory_text      =  $_POST['introductory_text'];
+                $author_name            =  $_POST['author_name'];
+                $author_title           =  $_POST['author_title'];
+                $region                 =  $_POST['region'];
+                $publication_date       =  $_POST['publication_date'];
+                $filename               =  $_POST['filename'];
+                $article_attachemnt_id  =  $_POST['article_attachment_id'];
                 if ( isset( $_POST['productId']  ) ) :
                    $prod_id = $_POST['productId'];
                 else :
                    $prod_id = 0;
                 endif;
 
-                $product=array( 'post_title' => $_POST['article_title'],
-                    'post_content' => 'Description of the first product',
-                    'post_status' => 'publish',
-                    'post_type' => "product",);
+                $product=array(
+                    'ID' => $prod_id,
+                    'post_title' => $article_title,
+                    'post_content' => $introductory_text,
+                    //'post_status' => 'publish',
+                    //'post_type' => "product",
+                );
 
                 if ( $prod_id != 0) {
-                    wp_update_post( $product );
+                    $returned_post_id = wp_update_post( $product , true);
+                    if (is_wp_error($returned_post_id)) {
+                        $errors = $post_id->get_error_messages();
+                        wp_send_json_error( $errors ); 
+                        wp_die();                       
+                    }
                 } else {
-                    $post_id = wp_insert_post( $product );
+                    $post_id = wp_insert_post( $product, $error );
 
                     wp_set_object_terms( $post_id, 'simple', 'product_type' );
                 }
@@ -389,7 +408,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                         </div>  
                                         <div>                                           
                                             <input id="upload_image_button-<?PHP echo($index);?>" type="button" class="button" value="<?php _e( 'Upload Article PDF' ); ?>" />
-                                            <input type='hiddenXX' name='image_attachment_id' id='image_attachment_id-<?PHP echo($index);?>' value='<?php echo get_option( 'media_selector_attachment_id' ); ?>'>
+                                            <input type='hiddenXX' name='image_attachment_id' id='article_attachment_id-<?PHP echo($index);?>' value='<?php echo get_option( 'media_selector_attachment_id' ); ?>'>
                                             
                                         </div>
                                         

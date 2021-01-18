@@ -123,7 +123,7 @@ function addExistingArticles() {
         jQuery('#image-' + articleIndex).val(product.imageUrl);
         jQuery('#filename-' + articleIndex).attr('href',product.downloadUrl);
         jQuery('#filename-' + articleIndex).text(product.title);       
-        jQuery('#image_attachment_id-' + articleIndex).val(product.downloadId)
+        jQuery('#article_attachment_id-' + articleIndex).val(product.downloadId)
     });
     jQuery('#upload_image_button-1').click(function(){
         console.log('in upload button click');
@@ -158,7 +158,7 @@ function addArticleScripts(index) {
             delay: 250,
             data: {	                    
                 action: 'ebp_add_product',
-                productId:            product_id,
+                productId:            products[index-1].id,
                 summary_title: 	       summary_title,	 
                 article_title:         article_title,
                 articlename:           articlename,      

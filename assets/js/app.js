@@ -166,7 +166,7 @@ function addArticleScripts(index) {
         var publication_date =        jQuery('#publication-date-' + index).val();
         var filename =                jQuery('#filename-' + index).text();       
         var article_attachment_id =   jQuery('#article_attachment_id-' + index).val();
-        var article_attachment_url =  jQuery('#article_attachment_url-' + index).val();
+        var article_attachment_url =  attachment.url; //jQuery('#article_attachment_url-' + index).val();
 
         jQuery.ajax({
             url: ebpadmin.ajaxurl,
@@ -176,6 +176,7 @@ function addArticleScripts(index) {
             delay: 250,
             data: {	                    
                 action: 'ebp_add_product',
+                pub_prod_id:            publicationId,
                 productId:              products[index-1].id,
                 summary_title: 	        summary_title,	 
                 article_title:          article_title,

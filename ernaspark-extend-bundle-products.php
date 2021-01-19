@@ -57,7 +57,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
             }     
             public function ebp_add_product () {
+                // need publication product id
+
                 $prod_id;
+                $pub_prod_id            =  $_POST['pub_prod_id'];
                 $summary_title 	        =  $_POST['summary_title'];
                 $article_title          =  $_POST['article_title'];
                 $articlename            =  $_POST['articlename'];
@@ -86,24 +89,41 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 );
 
                 if ( $prod_id != 0) {
+                    // UPDATE PRODUCT (ARTICLE)
                     $returned_post_id = wp_update_post( $product , true);
+                    $_products = get_post_meta($pub_prod_id, 'wcbp_products_addons_values', true);
+
                     if (is_wp_error($returned_post_id)) {
-                        $errors = $post_id->get_error_messages();
+                        $errors = $post_id->get_error_messages();                       
+
                         wp_send_json_error( $errors ); 
                         wp_die();                       
                     }
                 } else {
+                    // NEW PRODUCT (ARTICLE)
+
                     $post_id = wp_insert_post( $product, $error );
 
                     wp_set_object_terms( $post_id, 'simple', 'product_type' );
+
+                    $_products = get_post_meta($pub_prod_id, 'wcbp_products_addons_values', true);
+
+                    // TODO - add or amend this article to the add-ons in the master product
                 }
-                update_post_meta( $post_id, '_downloadable_files' , $article_attachment_url);
-                update_post_meta( $post_id, '_price', $price );
+                $meta = get_post_meta( $prod_id, '_downloadable_files' , true);
                 
-                // TODO - add or amend this article to the add-ons in the master product
+                $download  = array();
+                array_push($download,$filename);
+                array_push($download, md5($file_url));
+                array_push($download, $article_attachment_url);
+                $downloads[$md5_num] = $download; // Insert the new download to the array of downloads
+
+                $resp = update_post_meta( $prod_id, '_downloadable_files' , $downloads);
                
+                update_post_meta( $prod_id, '_price', $price );     
 
             }
+            
             public function ebp_get_articles_for_product(){
                 $prod_id = $_POST['productId'];
                 

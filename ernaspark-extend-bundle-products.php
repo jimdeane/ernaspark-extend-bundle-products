@@ -35,7 +35,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             public function __construct()
             {
                 add_action('wp_ajax_ebp_get_articles', array($this, 'ebp_get_articles_for_product'));
-                add_action('wp_ajax_ebp_add_product', array($this, 'ebp_add_product'));
+                add_action('wp_ajax_ebp_add_product', array($this, 'ebp_add_product'));           
+                add_action('wp_ajax_ebp_sort_addons', array($this, 'ebp_sort_addons'));
                 add_filter('woocommerce_product_data_tabs', array($this, 'ebp_product_data_tab'), 20);
                 add_action('woocommerce_product_data_panels', array($this, 'ebp_product_data_panel'));
                 add_action('init', array($this, 'ebp_register_script'));
@@ -44,7 +45,17 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 add_action('ebp_product_layout', array($this, 'ebp_product_layout_builder'));
                 add_action('wp_enqueue_scripts', array($this, 'enqueue_front_scripts'));
                
-            }           
+            }      
+            public function ebp_sort_addons() {
+                $sort_order = $_POST['sort_order'];
+                $prod_id    = $_POST['productId'];
+
+                // TODO update add-ons for product
+
+                wp_send_json_success();
+                wp_die();
+
+            }     
             public function ebp_add_product () {
                 $prod_id;
                 $summary_title 	        =  $_POST['summary_title'];
@@ -57,7 +68,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $region                 =  $_POST['region'];
                 $publication_date       =  $_POST['publication_date'];
                 $filename               =  $_POST['filename'];
-                $article_attachemnt_id  =  $_POST['article_attachment_id'];
+                $article_attachment_id  =  $_POST['article_attachment_id'];
+                $article_attachment_url =  $_POST['article_attachment_url'];
+               
                 if ( isset( $_POST['productId']  ) ) :
                    $prod_id = $_POST['productId'];
                 else :
@@ -68,8 +81,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     'ID' => $prod_id,
                     'post_title' => $article_title,
                     'post_content' => $introductory_text,
-                    //'post_status' => 'publish',
-                    //'post_type' => "product",
+                    'post_status' => 'publish',
+                    'post_type' => "product",
                 );
 
                 if ( $prod_id != 0) {
@@ -84,13 +97,11 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
                     wp_set_object_terms( $post_id, 'simple', 'product_type' );
                 }
+                update_post_meta( $post_id, '_downloadable_files' , $article_attachment_url);
+                update_post_meta( $post_id, '_price', $price );
                 
-                update_post_meta( $post_id, '_price', '156' );
-                update_post_meta( $post_id, '_featured', 'yes' );
-                update_post_meta( $post_id, '_stock', '23' );
-                update_post_meta( $post_id, '_stock_status', 'instock');
-                update_post_meta( $post_id, '_sku', 'jk01' );
-
+                // TODO - add or amend this article to the add-ons in the master product
+               
 
             }
             public function ebp_get_articles_for_product(){
@@ -116,11 +127,13 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         $authorPosition = get_post_meta($_product->id, 'author_position', true);
                         $price = $prod->get_price();
                         $downloadUrls = $prod->get_downloads();
+                        $sequence = $_product->sequence;
                         foreach ($downloadUrls as $key => $data) {
                             $downloadUrl = $data['file'];
                             $downloadId = $data['id'];                            
                             break;
                         }
+                        
                         array_push($arr, array(
                             'id' => $id,
                             'title' => $title,
@@ -133,10 +146,12 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                             'price' => $price,
                             'publicationDate' => '20210110',
                             'downloadUrl' => $downloadUrl,
-                            'downloadId' => $downloadId
+                            'downloadId' => $downloadId,
+                            'sequence' => $sequence
                         ));
                     }
                 }
+                usort($arr, function ($a, $b) { return strcmp($a["sequence"], $b["sequence"]); });
                 echo json_encode($arr);
                 die();
             }
@@ -325,9 +340,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 if (!empty($_products)) {
                     wp_enqueue_media();
                     $selection = get_post_meta($prod_id, 'wcbp_product_addons_selection', true); ?>
-                    <div style="display: flex; flex-direction: column">
-                    <input type='hiddenXX'  id='product_id' value='<?php echo ($prod_id); ?>'>
-                        <?php
+                    <?php
                         $index = 0;
                         $ids = array();
                         foreach ($_products as $key => $_product) { 
@@ -409,7 +422,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                         <div>                                           
                                             <input id="upload_image_button-<?PHP echo($index);?>" type="button" class="button" value="<?php _e( 'Upload Article PDF' ); ?>" />
                                             <input type='hiddenXX' name='image_attachment_id' id='article_attachment_id-<?PHP echo($index);?>' value='<?php echo get_option( 'media_selector_attachment_id' ); ?>'>
-                                            
+                                            <input type='hiddenXX' name='image_attachment_url' id='article_attachment_url-<?PHP echo($index);?>' value='<?php echo get_option( 'media_selector_attachment_url' ); ?>'>
                                         </div>
                                         
                                         <div class="form-group row">
@@ -425,13 +438,12 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         <?PHP   
                         }    
                         ?>
-                    </div>                        
                     <?php
                 }
             }
             public function ebp_product_data_panel() {
                 global $woocommerce, $post;
-                $post_id = $post->ID;
+                $prod_id = $post->ID;
                 wp_nonce_field('wcbp_bundle_product_nonce', 'wcbp_bundle_product_nonce');
                 echo ''; ?>
                 <div id="wcbp_custom_product_bundle">
@@ -440,15 +452,13 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                             <div class="container">
                                 <div class="col-xs-10">
                                     <div class="form" id="articles-form">
+                                    <input type='hiddenXX'  id='product_id' value='<?php echo ($prod_id); ?>'>
                                         <form action="#">
                                             <div style="width: auto;height: auto; border-style: dotted; padding: 10px;">
-                                                <div style="width:auto" id="sortable">
-                                                    <div name="article=-repeater">
-                                                        <?php
-                                                        echo("build articles");
+                                                <div style="width:auto" id="sortable">                                                    
+                                                        <?php                                                       
                                                         $this->build_articles();
-                                                        ?>
-                                                    </div>
+                                                        ?>                                                    
                                                 </div>
                                                 <div>
                                                     <br>

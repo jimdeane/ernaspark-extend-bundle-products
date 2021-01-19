@@ -1,10 +1,10 @@
 //(function () {
 console.log("!entered app.js");
-var wp_media_post_id = 0; //wp.media.model.settings.post.id; // Store the old id
-var set_to_post_id = 6093 ;//<?php echo $my_saved_attachment_post_id; ?>; // Set this
 var product_id;
 var products;
+var publicationId;
 var i = 0;
+var sorted;
 jQuery(document).ready(function() {
     // Save new product
     var file_frame;
@@ -13,13 +13,13 @@ jQuery(document).ready(function() {
         // If the media frame already exists, reopen it.
         if ( file_frame ) {
             // Set the post ID to what we want
-            file_frame.uploader.uploader.param( 'post_id', set_to_post_id );
+            file_frame.uploader.uploader.param( 'post_id', 0);//set_to_post_id );
             // Open frame
             file_frame.open();
             return;
         } else {
             // Set the wp.media post id so the uploader grabs the ID we want when initialised
-            wp.media.model.settings.post.id = set_to_post_id;
+            wp.media.model.settings.post.id = 0;//set_to_post_id;
         }
 
         // Create the media frame.
@@ -61,10 +61,26 @@ jQuery(document).ready(function() {
     jQuery(function() {
         jQuery("#sortable").sortable({
             stop: function(event, ui) {
-                var sorted = jQuery("#sortable").sortable("serialize", {
+                sorted = jQuery("#sortable").sortable("serialize", {
                     key: "sort",
                 });
                 console.debug(sorted);
+                jQuery.ajax({
+                    url: ebpadmin.ajaxurl,
+                    async: false,
+                    dataType: 'json',
+                    type : 'post',
+                    delay: 250,
+                    data: {	                    
+                        action: 'ebp_sort_addons',
+                        productId: publicationId,
+                        sort_order: sorted,
+                    },
+                    success: function(data, status) {
+                        console.debug("product addons sort succeeded");           
+                    },
+                    cache: false
+                  });  
             }
         });
         jQuery("#sortable").disableSelection();
@@ -122,7 +138,8 @@ function addExistingArticles() {
         jQuery('#publication-date-' + articleIndex).val(product.publicationDate);
         jQuery('#image-' + articleIndex).val(product.imageUrl);
         jQuery('#filename-' + articleIndex).attr('href',product.downloadUrl);
-        jQuery('#filename-' + articleIndex).text(product.title);       
+        jQuery('#filename-' + articleIndex).text(product.title);  
+        jQuery('#article_attachment_url-' + articleIndex).val(product.downloadUrl);     
         jQuery('#article_attachment_id-' + articleIndex).val(product.downloadId)
     });
     jQuery('#upload_image_button-1').click(function(){
@@ -138,17 +155,18 @@ function addArticleScripts(index) {
         index = jQuery(this).attr("name");
         console.debug("save clicked" + index);
 
-        var summary_title = 	     jQuery('#summary-title-' + index).text();
-        var article_title =          jQuery('#article-title-' + index).val();
-        var articlename =            jQuery('#article-name-' + index).val();
-        var price =                  jQuery('#price-' + index).val();
-        var introductory_text =      jQuery('#introductory-text-' + index).val();
-        var author_name =            jQuery('#author-name-' + index).val();
-        var author_title =           jQuery('#author-title-' + index).val();
-        var region =                 jQuery('#region-' + index).val();
-        var publication_date =       jQuery('#publication-date-' + index).val();
-        var filename =               jQuery('#filename-' + index).text();       
-        var article_attachment_id =  jQuery('#article_attachment_id-' + index).val()
+        var summary_title = 	      jQuery('#summary-title-' + index).text();
+        var article_title =           jQuery('#article-title-' + index).val();
+        var articlename =             jQuery('#article-name-' + index).val();
+        var price =                   jQuery('#price-' + index).val();
+        var introductory_text =       jQuery('#introductory-text-' + index).val();
+        var author_name =             jQuery('#author-name-' + index).val();
+        var author_title =            jQuery('#author-title-' + index).val();
+        var region =                  jQuery('#region-' + index).val();
+        var publication_date =        jQuery('#publication-date-' + index).val();
+        var filename =                jQuery('#filename-' + index).text();       
+        var article_attachment_id =   jQuery('#article_attachment_id-' + index).val();
+        var article_attachment_url =  jQuery('#article_attachment_url-' + index).val();
 
         jQuery.ajax({
             url: ebpadmin.ajaxurl,
@@ -158,18 +176,20 @@ function addArticleScripts(index) {
             delay: 250,
             data: {	                    
                 action: 'ebp_add_product',
-                productId:            products[index-1].id,
-                summary_title: 	       summary_title,	 
-                article_title:         article_title,
-                articlename:           articlename,      
-                price:                 price,        
-                introductory_text:     introductory_text,
-                author_name:           author_name,  
-                author_title:          author_title,        
-                region:                region,        
-                publication_date:      publication_date,
-                filename:              filename,
-                article_attachment_id: article_attachment_id
+                productId:              products[index-1].id,
+                summary_title: 	        summary_title,	 
+                article_title:          article_title,
+                articlename:            articlename,      
+                price:                  price,        
+                introductory_text:      introductory_text,
+                author_name:            author_name,  
+                author_title:           author_title,        
+                region:                 region,        
+                publication_date:       publication_date,
+                filename:               filename,
+                article_attachment_id:  article_attachment_id,
+                article_attachment_url: article_attachment_url,
+                
             },
             success: function(data, status) {
                 console.debug("product save succeeded");           
@@ -207,7 +227,7 @@ function removeDetailsBlock(index) {
 
 function getBundleProducts() {
     console.debug('get bundled products');
-    var productId = jQuery('#product_id').val();
+    publicationId = jQuery('#product_id').val();
     jQuery
     var productList;
     jQuery.ajax( {
@@ -218,11 +238,11 @@ function getBundleProducts() {
 	    delay: 250,
 	    data: {	                    
 	        action: 'ebp_get_articles',
-            productId: productId
+            productId: publicationId
 	    },
         success: function(data, status) {
             var jsonData = data;
-            productList = data; //JSON.parse(jsonData); 
+            productList = data;  
             console.log(productList);           
         },
         cache: false

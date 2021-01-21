@@ -7,8 +7,49 @@ var i = 0;
 var sorted;
 jQuery(document).ready(function() {
     // Save new product
+    jQuery('#add-article-button').click(function() {
+        i++;
+        console.debug(i);
+        addArticleHtml(i);
+        addArticleScripts(i);
+        addMediaScripts(i);
+        addSummaryToggle(i);
+        addCancelAction(i);
+    });
+    jQuery(function() {
+        jQuery("#sortable").sortable({
+            stop: function(event, ui) {
+                sorted = jQuery("#sortable").sortable("serialize", {
+                    key: "sort",
+                });
+                console.debug(sorted);
+                jQuery.ajax({
+                    url: ebpadmin.ajaxurl,
+                    async: false,
+                    dataType: 'json',
+                    type : 'post',
+                    delay: 250,
+                    data: {	                    
+                        action: 'ebp_sort_addons',
+                        productId: publicationId,
+                        sort_order: sorted,
+                    },
+                    success: function(data, status) {
+                        console.debug("product addons sort succeeded");           
+                    },
+                    cache: false
+                  });  
+            }
+        });
+        jQuery("#sortable").disableSelection();
+        jQuery("#sortable").sortable("option", "handle", ".handle")
+    });
+    addExistingArticles();
+
+});
+function addMediaScripts(index){
     var file_frame;
-    jQuery('#upload_image_button-1').on('click', function( event ){
+    jQuery('#upload_image_button-' + index).on('click', function( event ){
         event.preventDefault();
         // If the media frame already exists, reopen it.
         if ( file_frame ) {
@@ -50,46 +91,29 @@ jQuery(document).ready(function() {
             // Finally, open the modal
             file_frame.open();
     });
-    
-    jQuery('#add-article-button').click(function() {
-        i++;
-        console.debug(i);
-        addArticleHtml(i);
-        addSummaryToggle(i);
-        addCancelAction(i);
-    });
-    jQuery(function() {
-        jQuery("#sortable").sortable({
-            stop: function(event, ui) {
-                sorted = jQuery("#sortable").sortable("serialize", {
-                    key: "sort",
-                });
-                console.debug(sorted);
-                jQuery.ajax({
-                    url: ebpadmin.ajaxurl,
-                    async: false,
-                    dataType: 'json',
-                    type : 'post',
-                    delay: 250,
-                    data: {	                    
-                        action: 'ebp_sort_addons',
-                        productId: publicationId,
-                        sort_order: sorted,
-                    },
-                    success: function(data, status) {
-                        console.debug("product addons sort succeeded");           
-                    },
-                    cache: false
-                  });  
-            }
-        });
-        jQuery("#sortable").disableSelection();
-        jQuery("#sortable").sortable("option", "handle", ".handle")
-    });
-    addExistingArticles();
-
-});
-
+}
+function addArticleHtml(index){
+    jQuery.ajax( {
+	    url: ebpadmin.ajaxurl,
+        async: false,
+	    dataType: 'json',
+        type : 'post',
+	    delay: 2500,
+	    data: {	                    
+	        action: 'ebp_get_article_html',
+            index: index
+	    },
+        success: function(data, status) {
+            article_html = data;
+            console.log(article_html.data); 
+            jQuery('#sortable').append(article_html.data); // append article html to sortable list
+        },
+        error: function(err){
+            console.debug(err)
+        },
+        cache: false
+	  });
+}
 
 
 function addSummaryToggle(index) {
@@ -124,6 +148,7 @@ function addExistingArticles() {
         addArticleScripts(articleIndex);
         addSummaryToggle(articleIndex);
         addCancelAction(articleIndex);
+        addMediaScripts(articleIndex);
         detailsBlockId = '#details-block-' + articleIndex;
         jQuery(detailsBlockId).removeAttr("open");
         jQuery('#summary-title-' + articleIndex).text(product.title);
@@ -166,7 +191,14 @@ function addArticleScripts(index) {
         var publication_date =        jQuery('#publication-date-' + index).val();
         var filename =                jQuery('#filename-' + index).text();       
         var article_attachment_id =   jQuery('#article_attachment_id-' + index).val();
-        var article_attachment_url =  attachment.url; //jQuery('#article_attachment_url-' + index).val();
+        var article_attachment_url =  '';//attachment.url; //jQuery('#article_attachment_url-' + index).val();
+        var id = 0;
+        if (typeof(products[index-1]) === 'undefined'){
+            id = 0;
+        } else {
+            id = products[index-1].id;
+        };        
+
 
         jQuery.ajax({
             url: ebpadmin.ajaxurl,
@@ -177,7 +209,7 @@ function addArticleScripts(index) {
             data: {	                    
                 action: 'ebp_add_product',
                 pub_prod_id:            publicationId,
-                productId:              products[index-1].id,
+                productId:              id,
                 summary_title: 	        summary_title,	 
                 article_title:          article_title,
                 articlename:            articlename,      
@@ -199,6 +231,7 @@ function addArticleScripts(index) {
           });  
     
     })
+    jQuery('#publication-date-' + index).datepicker();
     jQuery('#remove-' + index).click(function() {
         index = jQuery(this).attr("name");
         alert('remove clicked ' + index);
@@ -229,7 +262,6 @@ function removeDetailsBlock(index) {
 function getBundleProducts() {
     console.debug('get bundled products');
     publicationId = jQuery('#product_id').val();
-    jQuery
     var productList;
     jQuery.ajax( {
 	    url: ebpadmin.ajaxurl,

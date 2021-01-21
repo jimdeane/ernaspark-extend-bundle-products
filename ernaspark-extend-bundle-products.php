@@ -37,6 +37,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 add_action('wp_ajax_ebp_get_articles', array($this, 'ebp_get_articles_for_product'));
                 add_action('wp_ajax_ebp_add_product', array($this, 'ebp_add_product'));
                 add_action('wp_ajax_ebp_sort_addons', array($this, 'ebp_sort_addons'));
+                add_action('wp_ajax_ebp_get_article_html', array($this, 'ebp_get_article_html'));
                 add_filter('woocommerce_product_data_tabs', array($this, 'ebp_product_data_tab'), 20);
                 add_action('woocommerce_product_data_panels', array($this, 'ebp_product_data_panel'));
                 add_action('init', array($this, 'ebp_register_script'));
@@ -45,6 +46,14 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 add_action('ebp_product_layout', array($this, 'ebp_product_layout_builder'));
                 add_action('wp_enqueue_scripts', array($this, 'enqueue_front_scripts'));
 
+            }
+            public function ebp_get_article_html(){
+                $index = $_POST['index'];
+                //wp_send_json_success( "<div>where the html1 goes</div>");
+                //wp_send_json_success( "<div>where the html2 goes</div>");
+                $html = $this->product_data_panel_html($index);
+                wp_send_json_success($html);
+                wp_die();
             }
             public function ebp_sort_addons()
             {
@@ -82,8 +91,6 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
             public function ebp_add_product()
             {
-                // need publication product id
-
                 $prod_id;
                 $pub_prod_id = $_POST['pub_prod_id'];
                 $summary_title = $_POST['summary_title'];
@@ -107,10 +114,12 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
 
                 $product = array(
                     'ID' => $prod_id,
-                    'post_title' => $article_title,
-                    'post_content' => $introductory_text,
-                    'post_status' => 'publish',
-                    'post_type' => "product",
+                    'post_title'            => $article_title,
+                    'post_content'          => $introductory_text,
+                    'post_status'           => 'publish',
+                    'post_type'             => "product",
+                    'xx'                    => $summary_title,
+                    'yy'                    => $articlename,                    
                 );
 
                 if ($prod_id != 0) {
@@ -131,8 +140,16 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     wp_set_object_terms($post_id, 'simple', 'product_type');
 
                     $_products = get_post_meta($pub_prod_id, 'wcbp_products_addons_values', true);
+                    $_products = json_decode($_products);
+                    $newseq = count($_products) + 1;
+                    $newtext = 'id='.$post_id;
+                    $newAddon = array('id'=> $post_id, 'text'=> $newtext, 'region'=>'none' , 'sequence'=> $newseq);
+                    array_push($_products, $newAddon);
+                    $_products = json_encode($_products, true);
+                    $x = update_post_meta($pub_prod_id, 'wcbp_products_addons_values', $_products);
 
-                    // TODO - add or amend this article to the add-ons in the master product
+                   
+
                 }
                 $meta = get_post_meta($prod_id, '_downloadable_files', true);
 
@@ -145,6 +162,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $resp = update_post_meta($prod_id, '_downloadable_files', $downloads);
 
                 update_post_meta($prod_id, '_price', $price);
+                update_post_meta($prod_id, 'publication_date', $publication_date);
+                update_post_meta($prod_id, 'author_name', $author_name);
+                update_post_meta($prod_id, 'author_title',$author_title);
+                update_post_meta($prod_id, 'article_region', $region);
 
             }
 
@@ -171,6 +192,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         $authorPosition = get_post_meta($_product->id, 'author_position', true);
                         $price = $prod->get_price();
                         $downloadUrls = $prod->get_downloads();
+                        $publication_date = get_post_meta($_product->id, 'publication_date', true);
                         $sequence = $_product->sequence;
                         foreach ($downloadUrls as $key => $data) {
                             $downloadUrl = $data['file'];
@@ -188,10 +210,12 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                             'authorName' => $authorName,
                             'authorTitle' => $authorPosition,
                             'price' => $price,
-                            'publicationDate' => '20210110',
+                            'publicationDate' => $publication_date,
                             'downloadUrl' => $downloadUrl,
                             'downloadId' => $downloadId,
                             'sequence' => $sequence,
+                            
+                            
                         ));
                     }
                 }
@@ -218,35 +242,35 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 $_products = json_decode($_products);
                 if (!empty($_products)) {
                     $selection = get_post_meta($prod_id, 'wcbp_product_addons_selection', true);?>
-<div class="style=" display: flex; flex-direction: column;>
+                    <div class="style=" display: flex; flex-direction: column;>
 
-    <?php
-$ids = array();
+                    <?php
+                    $ids = array();
                     foreach ($_products as $key => $_product) {
                         $prod = wc_get_product($_product->id);
                         $ids[] = $_product->id;?>
-    <div class="es_article_region">
-        <?PHP echo (get_post_meta($_product->id, 'article_region', true)); ?>
-    </div>
-    <div class="wcbp_prod_addon " style="display: flex; flex-direction: row;">
-        <div style="width: 100px;">
-            <?php
-if (has_post_thumbnail($prod->get_id())) {
+                        <div class="es_article_region">
+                            <?PHP echo (get_post_meta($_product->id, 'article_region', true)); ?>
+                        </div>
+                        <div class="wcbp_prod_addon " style="display: flex; flex-direction: row;">
+                            <div style="width: 100px;">
+                                <?php
+                    if (has_post_thumbnail($prod->get_id())) {
                             echo get_the_post_thumbnail($prod->get_id());
                         } else {
                             echo '<img src="' . esc_url(WC_UBP_URL . 'assets/images/placeholder.png') . '" >';
                         }?>
-        </div>
-        <div style="display: flex; flex-direction: column;">
-            <div style="display:flex; flex-direction: row;width: 100%">
-                <div class="details">
-                    <span class="wcbp-title"><a href="<?php
-if (get_post_meta($prod_id, 'wcbp_disable_bundle_tems_link', true) == 'no') {
-                            echo esc_url(get_the_permalink($prod->get_id()));
-                        } else {
-                            echo 'javascript:void(0);';
-                        }
-                        ?>
+                            </div>
+                            <div style="display: flex; flex-direction: column;">
+                                <div style="display:flex; flex-direction: row;width: 100%">
+                                    <div class="details">
+                                        <span class="wcbp-title"><a href="<?php
+                    if (get_post_meta($prod_id, 'wcbp_disable_bundle_tems_link', true) == 'no') {
+                                                echo esc_url(get_the_permalink($prod->get_id()));
+                                            } else {
+                                                echo 'javascript:void(0);';
+                                            }
+                                            ?>
                                             "><?php echo esc_html($prod->get_name()); ?></a></span>
                     <div class="es_author_name">
                         <?PHP $aa = get_post_meta($_product->id, 'author_name', true);?>
@@ -266,11 +290,11 @@ if (get_post_meta($prod_id, 'wcbp_disable_bundle_tems_link', true) == 'no') {
                 </div>
             </div>
             <?php
-if (!$prod->is_in_stock()) {?>
-            <p class="stock out-of-stock">
-                <?php esc_html_e('Out of stock', 'wc-bundle');?>
-            </p><?php
-}?>
+            if (!$prod->is_in_stock()) {?>
+                        <p class="stock out-of-stock">
+                            <?php esc_html_e('Out of stock', 'wc-bundle');?>
+                        </p><?php
+            }?>
         </div>
     </div>
 
@@ -401,146 +425,150 @@ esc_html_e('Total : ', 'wc-bundle');
                 if (!empty($_products)) {
                     wp_enqueue_media();
                     $selection = get_post_meta($prod_id, 'wcbp_product_addons_selection', true);?>
-<?php
-$index = 0;
+                    <?php
+                    $index = 0; 
                     $ids = array();
                     foreach ($_products as $key => $_product) {
-                        $index = $index + 1;?>
-<details id="details-block-<?PHP echo ($index); ?>" open style="width: row;height: auto; border-style: dashed">
-    <summary>
-        <div class="options_group align-items-center" style="width: auto">
-            <div class="">
-                <h4>
-                    <p id="summary-title-<?PHP echo ($index); ?>">Article Title -
-                        <?PHP echo ($index); ?>
-                    </p>
-                </h4>
-            </div>
-            <div class="summary-edit-button button " id="summary-button-edit-<?PHP echo ($index); ?>" name="<?PHP echo ($index); ?>">Edit</div>
-            <div class="summary-button "></div>
-            <div class="summary-remove-button button " id="summary-button-remove-<?PHP echo ($index); ?>" name="<?PHP echo ($index); ?>">Remove</div>
-            <span class="dashicons dashicons-list-view ui-sortable-handle handle"></span>
-        </div>
-    </summary>
-    <div class="panel-wrap product_data">
-        <div class="options_group" style="width: auto;height: auto; padding: 10px;">
-            <div class="form-group row form-field">
-                <label for="article-title-<?PHP echo ($index); ?>" class="col-sm-2 col-form-label"> Article Title</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" name="article-title-<?PHP echo ($index); ?>" id="article-title-<?PHP echo ($index); ?>">
-                </div>
-            </div>
-            <div class="form-group row">
-                <label for="purchase_note-<?PHP echo ($index); ?>" class="col-sm-2 col-form-label">Purchase note</label>
-                <textarea class="form-control" style="" name="purchase_note-<?PHP echo ($index); ?>" id="purchase_note-<?PHP echo ($index); ?>" placeholder="">
-                                            </textarea>
-            </div>
-            <div class="form-group row">
-                <label for="article-name-<?PHP echo ($index); ?>" class="col-sm-2 col-form-label">Article Name</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" name="article-name-<?PHP echo ($index); ?>" id="article-name-<?PHP echo ($index); ?>">
-                </div>
-            </div>
-            <div class="form-group row">
-                <label for="price-<?PHP echo ($index); ?>" class="col-sm-2 col-form-label">Price</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" name="price-<?PHP echo ($index); ?>" id="price-<?PHP echo ($index); ?>">
-                </div>
-            </div>
-            <div class="form-group row">
-                <label for="introductory-text-<?PHP echo ($index); ?>" class="col-sm-2 col-form-label">Introductory Text</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" name="introductory-text-<?PHP echo ($index); ?>" id="introductory-text-<?PHP echo ($index); ?>">
-                </div>
-            </div>
-            <div class="form-group row">
-                <label for="author-name-<?PHP echo ($index); ?>" class="col-sm-2 col-form-label">Author Name</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" name="author-name-<?PHP echo ($index); ?>" id="author-name-<?PHP echo ($index); ?>">
-                </div>
-            </div>
-            <div class="form-group row">
-                <label for="author-title-<?PHP echo ($index); ?>" class="col-sm-2 col-form-label">Author Title</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" name="author-title-<?PHP echo ($index); ?>" id="author-title-<?PHP echo ($index); ?>">
-                </div>
-            </div>
-            <div class="form-group row">
-                <label for="region-<?PHP echo ($index); ?>" class="col-sm-2 col-form-label">Region</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" name="region-<?PHP echo ($index); ?>" id="region-<?PHP echo ($index); ?>">
-                </div>
-            </div>
-            <div class="form-group row">
-                <label for="publication-date-<?PHP echo ($index); ?>" class="col-sm-2 col-form-label">Publication Date</label>
-                <div class="col-sm-10">
-                    <input type="text" class="form-control" name="publication-date-<?PHP echo ($index); ?>" id="publication-date-<?PHP echo ($index); ?>">
-                </div>
-            </div>
-
-            <p>Selected File
-            <p>
-            <div class="form-group row">
-                <a href="#" id="filename-<?PHP echo ($index); ?>">filename</a>
-            </div>
-            <div>
-                <input id="upload_image_button-<?PHP echo ($index); ?>" type="button" class="button" value="<?php _e('Upload Article PDF');?>" />
-                <input type='hiddenXX' name='image_attachment_id' id='article_attachment_id-<?PHP echo ($index); ?>' value='<?php echo get_option('media_selector_attachment_id'); ?>'>
-                <input type='hiddenXX' name='image_attachment_url' id='article_attachment_url-<?PHP echo ($index); ?>' value='<?php echo get_option('media_selector_attachment_url'); ?>'>
-            </div>
-
-            <div class="form-group row">
-                <div class="col-sm-6"></div>
-                <button type="submit" class="col-sm-2 button" name="<?PHP echo ($index); ?>" id="save-<?PHP echo ($index); ?>">Save</button>
-                <button type="submit" class="col-sm-2 button" name="<?PHP echo ($index); ?>" id="cancel-<?PHP echo ($index); ?>"> Cancel</button>
-                <button type="submit" class="col-sm-2 button" name="<?PHP echo ($index); ?>" id="remove-<?PHP echo ($index); ?>">Remove</button>
-
-            </div>
-        </div>
-    </div>
-</details>
-<?PHP
-}
-                    ?>
-<?php
-}
+                        $index = $index + 1;
+                        echo($this->product_data_panel_html($index));
+                        
+                    }                    
+                }
             }
+            
+            public function product_data_panel_html($index){
+                return  
+                    '<details id="details-block-' . $index .'" open style="width: row;height: auto; border-style: dashed">'.
+                                '<summary>
+                                    <div class="options_group align-items-center" style="width: auto">
+                                        <div class="">
+                                            <h4>
+                                                <p id="summary-title-' . $index . '">Article Title -'
+                                                   . $index.
+                                               '</p>
+                                            </h4>
+                                        </div>
+                                        <div class="summary-edit-button button " id="summary-button-edit-'. $index .'" name="'.$index .'">Edit</div>
+                                        <div class="summary-button "></div>
+                                        <div class="summary-remove-button button " id="summary-button-remove-'.$index.'" name="'.$index.'">Remove</div>
+                                        <span class="dashicons dashicons-list-view ui-sortable-handle handle"></span>
+                                    </div>
+                                </summary>
+                                <div class="panel-wrap product_data">
+                                    <div class="options_group" style="width: auto;height: auto; padding: 10px;">
+                                        <div class="form-group row form-field">
+                                            <label for="article-title-'.$index.'" class="col-sm-2 col-form-label"> Article Title</label>
+                                            <div class="col-sm-10">
+                                                <input type="text" class="form-control" name="article-title-'.$index.'" id="article-title-'.$index.'" required>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="purchase_note-'.$index.'" class="col-sm-2 col-form-label">Purchase note</label>
+                                            <textarea class="form-control" style="" name="purchase_note-'.$index.'" id="purchase_note-'.$index.'" placeholder="">
+                                                                        </textarea>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="article-name-'.$index.'" class="col-sm-2 col-form-label">Article Name</label>
+                                            <div class="col-sm-10">
+                                                <input type="text" class="form-control" name="article-name-'.$index.'" id="article-name-'.$index.'" required>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="price-'.$index.'" class="col-sm-2 col-form-label">Price</label>
+                                            <div class="col-sm-10">
+                                                <input type="text" class="form-control" name="price-'.$index.' id="price-'.$index.'" required>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="introductory-text-'.$index.'" class="col-sm-2 col-form-label">Introductory Text</label>
+                                            <div class="col-sm-10">
+                                                <input type="text" class="form-control" name="introductory-text-'.$index.'" id="introductory-text-'.$index.'">
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="author-name-'.$index.'" class="col-sm-2 col-form-label">Author Name</label>
+                                            <div class="col-sm-10">
+                                                <input type="text" class="form-control" name="author-name-'.$index.'" id="author-name-'.$index.'">
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="author-title-'.$index.'" class="col-sm-2 col-form-label">Author Title</label>
+                                            <div class="col-sm-10">
+                                                <input type="text" class="form-control" name="author-title-'.$index.'" id="author-title-'.$index.'">
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="region-'.$index.'" class="col-sm-2 col-form-label">Region</label>
+                                            <div class="col-sm-10">
+                                                <input type="text" class="form-control" name="region-'.$index.'" id="region-'.$index.'">
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label for="publication-date-'.$index.'" class="col-sm-2 col-form-label">Publication Date</label>
+                                            <div class="col-sm-10">
+                                                <input type="text" class="form-control" name="publication-date-'.$index.'" id="publication-date-'.$index.'" required>
+                                            </div>
+                                        </div>
+    
+                                        <p>Selected File
+                                        <p>
+                                        <div class="form-group row">
+                                            <a href="#" id="filename-'.$index.'">filename</a>
+                                        </div>
+                                        <div>
+                                            <input id="upload_image_button-'.$index.'" type="button" class="button" value="Upload Article PDF" />
+                                            <input type="hiddenXX" name="image_attachment_id" id="article_attachment_id-'  .$index. ' value="'. get_option('media_selector_attachment_id').'">
+                                            <input type="hiddenXX" name="image_attachment_url" id="article_attachment_url-'.$index. ' value="'. get_option('media_selector_attachment_url').'">
+                                        </div>
+    
+                                        <div class="form-group row">
+                                            <div class="col-sm-6"></div>
+                                            <button type="submit" class="col-sm-2 button" name="'.$index.'" id="save-'  .$index.'">Save</button>
+                                            <button type="submit" class="col-sm-2 button" name="'.$index.'" id="cancel-'.$index.'">Close</button>
+                                            <button type="submit" class="col-sm-2 button" name="'.$index.'" id="remove-'.$index.'">Remove</button>
+    
+                                        </div>
+                                    </div>
+                                </div>
+                            </details>';
+                            
+                }
             public function ebp_product_data_panel()
             {
                 global $woocommerce, $post;
                 $prod_id = $post->ID;
                 wp_nonce_field('wcbp_bundle_product_nonce', 'wcbp_bundle_product_nonce');
                 echo '';?>
-<div id="wcbp_custom_product_bundle">
-    <div class="options_group">
-        <div id="article_product_data" class="panel woocommerce-options-panel">
-            <div class="container">
-                <div class="col-xs-10">
-                    <div class="form" id="articles-form">
-                        <input type='hiddenXX' id='product_id' value='<?php echo ($prod_id); ?>'>
-                        <form action="#">
-                            <div style="width: auto;height: auto; border-style: dotted; padding: 10px;">
-                                <div style="width:auto" id="sortable">
-                                    <?php
-$this->build_articles();
-                ?>
-                                </div>
-                                <div>
-                                    <br>
-                                    <div class="button" id="add-article-button">Add Article</div>
-                                    <div id="test-text"></div>
-                                    <div class="" id="test"></div>
+                <div id="wcbp_custom_product_bundle">
+                    <div class="options_group">
+                        <div id="article_product_data" class="panel woocommerce-options-panel">
+                            <div class="container">
+                                <div class="col-xs-10">
+                                    <div class="form" id="articles-form">
+                                        <input type='hiddenXX' id='product_id' value='<?php echo ($prod_id); ?>'>
+                                        <form action="#">
+                                            <div style="width: auto;height: auto; border-style: dotted; padding: 10px;">
+                                                <div style="width:auto" id="sortable">
+                                                    <?php
+                                                    $this->build_articles();
+                                                    ?>
+                                                </div>
+                                                <div>
+                                                    <br>
+                                                    <div class="button" id="add-article-button">Add Article</div>
+                                                    <div id="test-text"></div>
+                                                    <div class="" id="test"></div>
+                                                </div>
+                                            </div>
+                                        </form>
+                                    </div>
                                 </div>
                             </div>
-                        </form>
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
-<?PHP
-}
+                <?PHP
+            }
 
         };
 

@@ -225,7 +225,7 @@ function addArticleScripts(index) {
                 
             },
             success: function(data, status) {
-                console.debug("product save succeeded");           
+                alert("Article saved");           
             },
             cache: false
           });  
@@ -235,13 +235,13 @@ function addArticleScripts(index) {
     jQuery('#remove-' + index).click(function() {
         index = jQuery(this).attr("name");
         alert('remove clicked ' + index);
-        removeProduct(index);
-        removeDetailsBlock(index);
+        result = removeProduct(index);
+        removeDetailsBlock(index);    
     });
     jQuery('#summary-button-remove-' + index).click(function() {
         index = jQuery(this).attr("name");
         alert('summary button remove clicked ' + index);
-        removeProduct(index);
+        result = removeProduct(index);
         removeDetailsBlock(index);
     });
     jQuery("#image-button-" + index).click(function() {
@@ -287,8 +287,28 @@ function getBundleProducts() {
 function removeProduct(productId) {
     console.debug(productId);
     tempProducts = [];
-    products = products.filter(product => product.id != productId);
-    console.debug('removed' + JSON.stringify(products));
+    prodId = products[productId-1].id;
+    jQuery.ajax({
+        url: ebpadmin.ajaxurl,
+        async: false,
+        dataType: 'json',
+        type : 'post',
+        delay: 250,
+        data: {	                    
+            action: 'ebp_remove_product',
+            productId:              prodId,  
+            publicationId:          publicationId          
+        },
+        success: function(data, status) {
+            console.debug("product remove succeeded");
+            products = products.filter(product => product.id != productId);
+            alert('Article Removed');
+        },
+        error: function(err){
+            alert('Remove failed');            
+        },
+        cache: false
+      });      
 }
 function loadData(href) {
     var xmlhttp = new XMLHttpRequest();

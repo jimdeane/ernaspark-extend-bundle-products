@@ -38,6 +38,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 add_action('wp_ajax_ebp_add_product', array($this, 'ebp_add_product'));
                 add_action('wp_ajax_ebp_sort_addons', array($this, 'ebp_sort_addons'));
                 add_action('wp_ajax_ebp_get_article_html', array($this, 'ebp_get_article_html'));
+                add_action('wp_ajax_ebp_remove_product', array($this, 'ebp_remove_product'));
                 add_filter('woocommerce_product_data_tabs', array($this, 'ebp_product_data_tab'), 20);
                 add_action('woocommerce_product_data_panels', array($this, 'ebp_product_data_panel'));
                 add_action('init', array($this, 'ebp_register_script'));
@@ -47,10 +48,30 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 add_action('wp_enqueue_scripts', array($this, 'enqueue_front_scripts'));
 
             }
+            public function ebp_remove_product(){
+                $prod_id = $_POST['productId'];
+                $pub_prod_id = $_POST['publicationId'];
+                $_products = get_post_meta($pub_prod_id, 'wcbp_products_addons_values', true);
+                $_products = json_decode($_products);
+                $index = 0;
+                foreach($_products as $key => $_product){
+                    $x = $_product;
+                    if($_product->id == $prod_id){                        
+                        break;
+                    }
+                    $index = $index + 1;
+                };
+                unset($_products[$index]);            
+
+                if(update_post_meta($pub_prod_id, 'wcbp_products_addons_values', $_products)){
+                    wp_send_json_success();
+                };
+                
+                wp_die();
+            }
             public function ebp_get_article_html(){
                 $index = $_POST['index'];
-                //wp_send_json_success( "<div>where the html1 goes</div>");
-                //wp_send_json_success( "<div>where the html2 goes</div>");
+                
                 $html = $this->product_data_panel_html($index);
                 wp_send_json_success($html);
                 wp_die();
@@ -125,8 +146,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                 if ($prod_id != 0) {
                     // UPDATE PRODUCT (ARTICLE)
                     $returned_post_id = wp_update_post($product, true);
-                    $_products = get_post_meta($pub_prod_id, 'wcbp_products_addons_values', true);
-
+                    
                     if (is_wp_error($returned_post_id)) {
                         $errors = $post_id->get_error_messages();
 
@@ -139,17 +159,24 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $post_id = wp_insert_post($product, $error);
                     wp_set_object_terms($post_id, 'simple', 'product_type');
 
-                    $_products = get_post_meta($pub_prod_id, 'wcbp_products_addons_values', true);
+                    $_products = get_post_meta($pub_prod_id, 'wcbp_products_addons_values', true);                    
                     $_products = json_decode($_products);
-                    $newseq = count($_products) + 1;
-                    $newtext = 'id='.$post_id;
-                    $newAddon = array('id'=> $post_id, 'text'=> $newtext, 'region'=>'none' , 'sequence'=> $newseq);
-                    array_push($_products, $newAddon);
+                    if($_products === null){
+                        $_products = array();
+                        $newseq = 1;
+                        $newtext = 'id='.$post_id;
+                        $newAddon = array('id'=> $post_id, 'text'=> $newtext, 'region'=>'none' , 'sequence'=> $newseq);
+                        array_push($_products, $newAddon);
+                    } else {
+                        $_products = json_decode($_products);
+                        $newseq = count($_products) + 1;
+                        $newtext = 'id='.$post_id;
+                        $newAddon = array('id'=> $post_id, 'text'=> $newtext, 'region'=>'none' , 'sequence'=> $newseq);
+                        array_push($_products, $newAddon);
+                    }
+                    
                     $_products = json_encode($_products, true);
-                    $x = update_post_meta($pub_prod_id, 'wcbp_products_addons_values', $_products);
-
-                   
-
+                    $x = update_post_meta($pub_prod_id, 'wcbp_products_addons_values', $_products); 
                 }
                 $meta = get_post_meta($prod_id, '_downloadable_files', true);
 

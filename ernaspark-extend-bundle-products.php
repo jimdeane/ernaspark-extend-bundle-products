@@ -178,16 +178,69 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     $_products = json_encode($_products, true);
                     $x = update_post_meta($pub_prod_id, 'wcbp_products_addons_values', $_products); 
                 }
-                $meta = get_post_meta($prod_id, '_downloadable_files', true);
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                
+                // $meta = get_post_meta($prod_id, '_downloadable_files', true);
 
-                $download = array();
-                array_push($download, $filename);
-                array_push($download, md5($file_url));
-                array_push($download, $article_attachment_url);
-                $downloads[$md5_num] = $download; // Insert the new download to the array of downloads
+                // $download = array();
+                // array_push($download, $filename);
+                // array_push($download, md5($article_attachment_url));
+                // array_push($download, $article_attachment_url);
+                // $downloads[$md5_num] = $download; // Insert the new download to the array of downloads
 
-                $resp = update_post_meta($prod_id, '_downloadable_files', $downloads);
+                // $resp = update_post_meta($prod_id, '_downloadable_files', $downloads);
 
+                $product = get_product($prod_id);
+                
+                $downloads = (array) $product->get_downloads(); 
+
+                // Only added once (avoiding repetitions
+                //if( sizeof($downloads) == 0 ){
+                    // Get post thumbnail data
+                    $thumb_id = get_post_thumbnail_id( $product->get_id() );
+                    $src_img  = wp_get_attachment_image_src( $thumb_id, 'full');
+                    $img_meta = wp_get_attachment_metadata( $thumb_id, false );
+
+                    // Prepare download data
+                    $file_title = $img_meta['image_meta']['title'];
+                    $file_url   = reset($src_img);
+                    $file_md5   = md5($file_url);
+
+                    $download  = array(
+                        'id'   => $file_title,
+                        'name' => $file_md5,
+                        'file' => $file_url,
+                    );//= new WC_Product_Download(); // Get an instance of the WC_Product_Download Object
+
+                    
+                    $downloads[$md5_num] = $download; // Insert the new download to the array of downloads
+
+                    $product->set_downloads($downloads); // Set new array of downloads
+                // }
+               
+               
+               
+               
+               
+               
+               
+               
+               
+               
+               
+               
                 update_post_meta($prod_id, '_price', $price);
                 update_post_meta($prod_id, 'publication_date', $publication_date);
                 update_post_meta($prod_id, 'author_name', $author_name);
@@ -222,8 +275,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         $publication_date = get_post_meta($_product->id, 'publication_date', true);
                         $sequence = $_product->sequence;
                         foreach ($downloadUrls as $key => $data) {
-                            $downloadUrl = $data['file'];
-                            $downloadId = $data['id'];
+                            $downloadUrl = $data['file'];                            
+                            $downloadName = $data['name'];
                             break;
                         }
 
@@ -239,7 +292,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                             'price' => $price,
                             'publicationDate' => $publication_date,
                             'downloadUrl' => $downloadUrl,
-                            'downloadId' => $downloadId,
+                            
+                            'downloadName' => $downloadName,
                             'sequence' => $sequence,
                             
                             
@@ -444,8 +498,7 @@ esc_html_e('Total : ', 'wc-bundle');
                 unset($product_data_tabs['wcbp_bundle']);
                 return $product_data_tabs;
             }
-            public function build_articles()
-            {
+            public function build_articles() {
                 $prod_id = get_the_ID();
                 $_products = get_post_meta($prod_id, 'wcbp_products_addons_values', true);
                 $_products = json_decode($_products);
@@ -503,7 +556,7 @@ esc_html_e('Total : ', 'wc-bundle');
                                         <div class="form-group row">
                                             <label for="price-'.$index.'" class="col-sm-2 col-form-label">Price</label>
                                             <div class="col-sm-10">
-                                                <input type="text" class="form-control" name="price-'.$index.' id="price-'.$index.'" required>
+                                                <input type="text" class="form-control" name="price-'.$index.'" id="price-'.$index.'" required>
                                             </div>
                                         </div>
                                         <div class="form-group row">
@@ -544,8 +597,8 @@ esc_html_e('Total : ', 'wc-bundle');
                                         </div>
                                         <div>
                                             <input id="upload_image_button-'.$index.'" type="button" class="button" value="Upload Article PDF" />
-                                            <input type="hiddenXX" name="image_attachment_id" id="article_attachment_id-'  .$index. ' value="'. get_option('media_selector_attachment_id').'">
-                                            <input type="hiddenXX" name="image_attachment_url" id="article_attachment_url-'.$index. ' value="'. get_option('media_selector_attachment_url').'">
+                                            <input type="hiddenXX" name="image_attachment_id" id="article_attachment_id-'  .$index. '" value="" required>
+                                            <input type="hiddenXX" name="image_attachment_url" id="article_attachment_url-'.$index. '" value="" required>
                                         </div>
     
                                         <div class="form-group row">
@@ -560,8 +613,7 @@ esc_html_e('Total : ', 'wc-bundle');
                             </details>';
                             
                 }
-            public function ebp_product_data_panel()
-            {
+            public function ebp_product_data_panel() {
                 global $woocommerce, $post;
                 $prod_id = $post->ID;
                 wp_nonce_field('wcbp_bundle_product_nonce', 'wcbp_bundle_product_nonce');

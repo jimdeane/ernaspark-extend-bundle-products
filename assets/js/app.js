@@ -82,9 +82,14 @@ function addMediaScripts(index){
             attachment = file_frame.state().get('selection').first().toJSON();
 
             // Do something with attachment.id and/or attachment.url here
-            jQuery( '#image-preview' ).attr( 'src', attachment.url ).css( 'width', 'auto' );
-            jQuery( '#image_attachment_id' ).val( attachment.id );
+            // jQuery( '#image-preview' ).attr( 'src', attachment.url ).css( 'width', 'auto' );
+            // jQuery( '#image_attachment_id' ).val( attachment.id );
 
+            jQuery('#filename-' + articleIndex).attr('href',attachment.url);
+              
+            jQuery('#filename-' + articleIndex).text(attachment.filename);  
+            jQuery('#article_attachment_url-' + articleIndex).val(attachment.url);     
+            
             
         });
 
@@ -163,9 +168,10 @@ function addExistingArticles() {
         jQuery('#publication-date-' + articleIndex).val(product.publicationDate);
         jQuery('#image-' + articleIndex).val(product.imageUrl);
         jQuery('#filename-' + articleIndex).attr('href',product.downloadUrl);
-        jQuery('#filename-' + articleIndex).text(product.title);  
+        jQuery('#filename-' + articleIndex).text(product.downloadName);  
         jQuery('#article_attachment_url-' + articleIndex).val(product.downloadUrl);     
-        jQuery('#article_attachment_id-' + articleIndex).val(product.downloadId)
+        
+        
     });
     jQuery('#upload_image_button-1').click(function(){
         console.log('in upload button click');
@@ -190,8 +196,8 @@ function addArticleScripts(index) {
         var region =                  jQuery('#region-' + index).val();
         var publication_date =        jQuery('#publication-date-' + index).val();
         var filename =                jQuery('#filename-' + index).text();       
-        var article_attachment_id =   jQuery('#article_attachment_id-' + index).val();
-        var article_attachment_url =  '';//attachment.url; //jQuery('#article_attachment_url-' + index).val();
+        
+        var article_attachment_url =  jQuery('#article_attachment_url-' + index).val();
         var id = 0;
         if (typeof(products[index-1]) === 'undefined'){
             id = 0;
@@ -220,7 +226,7 @@ function addArticleScripts(index) {
                 region:                 region,        
                 publication_date:       publication_date,
                 filename:               filename,
-                article_attachment_id:  article_attachment_id,
+                
                 article_attachment_url: article_attachment_url,
                 
             },

@@ -34,12 +34,7 @@ if (post_password_required()) {
 ?>
 <div id="product-<?php the_ID(); ?>" <?php wc_product_class('', $product); ?>>
 	<?php
-	/**
-	 * Hook: woocommerce_before_single_product_summary.
-	 *
-	 * @hooked woocommerce_show_product_sale_flash - 10
-	 * @hooked woocommerce_show_product_images - 20
-	 */
+	
 	do_action('woocommerce_before_single_product_summary');
 	?>
 	<div class="summary entry-summary">
@@ -63,22 +58,19 @@ if (post_password_required()) {
 					if($countOfCategories > 1){
 						$caption = "<h4>Both Publication and Report categories set!</h4>";
 					}
-					echo($caption);						
-					?>
+					echo($caption);?>
 					<div>
 					<?PHP echo($product->get_name()); ?>
-					</div>
-					
-					<div>
+					</div>	
 					<div>
 					<?PHP echo($product->get_description()); ?>
 					</div>
 					<?PHP echo($product->get_short_description()); ?>
 					</div>
 					<?PHP echo wp_kses_post(wc_get_stock_html($product)); ?>
-					<div class="wcbp_bottom">
+					<div class="wcbp_bottom wcbp_prod_addon">
 						<span>Price : <?PHP echo(get_woocommerce_currency_symbol());echo(number_format($product->get_regular_price(),2,'.',''));  ?></span>
-						
+						<input type="checkbox" name="main_product" id="main_product_select" ></input><span id="main_product_select_text">Select</span>
 					</div>
 					<div  style="display: flex; flex-direction: column;">
 						<h4>Individual Articles for Download</h4>
@@ -110,36 +102,12 @@ if (post_password_required()) {
 						</div>
 					</div>;
 				</div>
-			</div>
-
-
-
-			<?php
-			/**
-			 * Hook: woocommerce_single_product_summary.
-			 *
-			 * @hooked woocommerce_template_single_title - 5
-			 * @hooked woocommerce_template_single_rating - 10
-			 * @hooked woocommerce_template_single_price - 10
-			 * @hooked woocommerce_template_single_excerpt - 20
-			 * @hooked woocommerce_template_single_add_to_cart - 30
-			 * @hooked woocommerce_template_single_meta - 40
-			 * @hooked woocommerce_template_single_sharing - 50
-			 * @hooked WC_Structured_Data::generate_product_data() - 60
-			 */
-			//do_action( 'woocommerce_single_product_summary' );
-			?>
+			</div>		
 		</div>
 		<?php
-		/**
-		 * Hook: woocommerce_after_single_product_summary.
-		 *
-		 * @hooked woocommerce_output_product_data_tabs - 10
-		 * @hooked woocommerce_upsell_display - 15
-		 * @hooked woocommerce_output_related_products - 20
-		 */
+		
 		do_action('woocommerce_after_single_product_summary');
 		?>
 	</div>
-
-	<?php do_action('woocommerce_after_single_product'); ?>
+	<?php
+	do_action('woocommerce_after_single_product'); ?>

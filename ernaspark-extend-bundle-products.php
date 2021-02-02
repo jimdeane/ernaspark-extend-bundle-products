@@ -360,9 +360,19 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                         <div class="es_author_positon">
                                             <?PHP echo (get_post_meta($_product->id, 'author_position', true)); ?>
                                         </div>
-                                        <span class="wcbp-price"><?php echo esc_html(get_woocommerce_currency_symbol()); ?><span class="price"><?php echo esc_html(number_format($prod->get_price(), 2, '.', '')); ?></span></span>
-                                        <input type="checkbox" name="prod_<?php echo esc_attr($prod->get_id()); ?>" id="cp_prod_<?php echo esc_attr($prod->get_id()); ?>" data-product-id="<?php echo esc_attr($prod->get_id()); ?>">
-                                        <span class="es_article_select">Select</span>
+                                        <?php
+                                        if ($prod->get_price()==0){ 
+                                            $downloads = $prod->get_downloads();
+                                            foreach( $downloads as $key => $each_download ) {
+                                                echo '<a href="'.$each_download["file"].'">Download</a>';
+                                            }
+                                        }
+                                        else{ ?>
+                                            <span class="wcbp-price"><?php echo esc_html(get_woocommerce_currency_symbol()); ?><span class="price"><?php echo esc_html(number_format($prod->get_price(), 2, '.', '')); ?></span></span>
+                                            <input type="checkbox" name="prod_<?php echo esc_attr($prod->get_id()); ?>" id="cp_prod_<?php echo esc_attr($prod->get_id()); ?>" data-product-id="<?php echo esc_attr($prod->get_id()); ?>">
+                                            <span class="es_article_select">Select</span>
+                                            <?PHP
+                                        }  ?>                                      
                                     </div>
                                 </div>
                             </div>

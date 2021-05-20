@@ -40,24 +40,37 @@ if (post_password_required()) {
 		<div>
 			<div>
 				<div>
-					<?PHP 	
+					<?PHP 					
 					$terms = wp_get_post_terms($product->get_id(),"product_cat");
-					$caption = "<h4>No product category set</h4>";
+					$captionHeader = "<h4>No product category set</h4>";
 					$countOfCategories = 0;
 					foreach($terms as $category){
 						if($category->name == "Publications"){
 							$countOfCategories++;
-							$caption = "<h4>Printed Publication</h4>";
+							$captionHeader = "<h4>Printed Publication</h4>";
+							$captionSubHeader = "Articles for Download";
 						}
 						if($category->name == "Reports"){
 							$countOfCategories++;
-							$caption = "<h4>Printed Report</h4>";
+							$captionHeader = "<h4>Printed Report</h4>";
+							$captionSubHeader = "Articles for Download";
+						}
+						if($category->name == "Books"){
+							$countOfCategories++;
+							$captionHeader = "<h4>Printed Books</h4>";
+							$captionSubHeader = "Sections";
+						}
+						if($category->name == "Magazines"){
+							$countOfCategories++;
+							$captionHeader = "<h4>Printed Magazines</h4>";
+							$captionSubHeader = "";
 						}
 					}
 					if($countOfCategories > 1){
-						$caption = "<h4>Both Publication and Report categories set!</h4>";
+						$captionHeader = "<h4>Both Publication and Report categories set!</h4>";
+						$captionSubHeader = $captionHeader;
 					}
-					echo($caption);?>
+					echo($captionHeader);?>
 					<div>
 						<?PHP echo($product->get_name()); ?>
 					</div>	
@@ -74,7 +87,10 @@ if (post_password_required()) {
 					</div>
 					<form class="cart" action="<?php echo esc_url(apply_filters('woocommerce_add_to_cart_form_action', $product->get_permalink())); ?>" method="post" enctype='multipart/form-data'>
 						<div  style="display: flex; flex-direction: column;">
-							<h4>Individual Articles for Download</h4>
+							
+							
+							
+							<h4><?PHP echo($captionSubHeader); ?></h4>
 							<?PHP
 							do_action('ebp_product_layout');
 							?>

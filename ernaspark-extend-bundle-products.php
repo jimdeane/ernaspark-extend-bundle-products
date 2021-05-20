@@ -273,6 +273,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                         $price = $prod->get_price();
                         $downloadUrls = $prod->get_downloads();
                         $publication_date = get_post_meta($_product->id, 'publication_date', true);
+                        if($publication_date == '') {
+                            $publication_date = '1 Jan 2021';
+                        }
                         $sequence = $_product->sequence;
                         foreach ($downloadUrls as $key => $data) {
                             $downloadUrl = $data['file'];                            
@@ -316,9 +319,32 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     wp_enqueue_script('wcbp-bundle-product');
                 }
             }
-            
-            public function ebp_product_layout_builder() {
+            public function is_product_owned($customer_id, $product_purchased){
+                $found = false;
+                $customer_orders = get_posts( array(
+                    'numberposts' => -1,
+                    'meta_key'    => '_customer_user',
+                    'meta_value'  => $customer_id, //1, //get_current_user_id(),
+                    'post_type'   => wc_get_order_types(),
+                    'post_status' => array_keys( wc_get_order_statuses() ),
+                ) );
+
+                foreach ( $customer_orders as $key => $order_item){
+                    $order = wc_get_order($order_item->ID);
+                    $items = $order->get_downloadable_items();
+                    
+                    $item_found = array_search($product_purchased, array_column($items,'product_id'));
+                    if ($item_found !== false){
+                        $found = true;
+                        break;
+                    }
+                }
+                return $found;
+            }
+            public function ebp_product_layout_builder() {    
+                $customer_id = get_current_user_id();
                 $prod_id = get_the_ID();
+                
                 $_products = get_post_meta($prod_id, 'wcbp_products_addons_values', true);
                 $_products = json_decode($_products);
                 if (!empty($_products)) {
@@ -326,8 +352,37 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                     <div class="style=" display: flex; flex-direction: column;>
                         <?php
                         $ids = array();
-                        foreach ($_products as $key => $_product) {
+                        foreach ($_products as $key => $_product) {                                                      
                             $prod = wc_get_product($_product->id);
+
+                            $terms = wp_get_post_terms($prod->get_id(),"product_cat");
+                            $productBlockType = "none";
+                            $countOfCategories = 0;
+                            foreach($terms as $category){
+                                if($category->name == "Publications"){
+                                    $countOfCategories++;
+                                    $productBlockType = "publications";
+                                }
+                                if($category->name == "Reports"){
+                                    $countOfCategories++;
+                                    $productBlockType = "reports";
+                                }
+                                if($category->name == "Books"){
+                                    $countOfCategories++;
+                                    $productBlockType = "books";
+                                }
+                                if($category->name == "Section"){
+                                    $countOfCategories++;
+                                    $productBlockType = "section";
+                                }
+                                if($category->name == "Magazines"){
+                                    $countOfCategories++;
+                                    $productBlockType = "magazines";
+                                }
+                            }
+                            if($countOfCategories > 1){
+                                $productBlockType = "multiple";                               
+                            }
                             $ids[] = $_product->id;?>
                             <div class="es_article_region">
                                 <?PHP echo (get_post_meta($_product->id, 'article_region', true)); ?>
@@ -345,6 +400,9 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                                     echo 'javascript:void(0);';
                                                 }?>
                                                 "><?php
+                                                    if($productBlockType == 'section'){
+                                                        echo esc_html($prod->get_short_description(). ' ');
+                                                    }                                                    
                                                     echo esc_html($prod->get_name()); ?>
                                                 </a>
                                             </span>
@@ -361,7 +419,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                             <?PHP echo (get_post_meta($_product->id, 'author_position', true)); ?>
                                         </div>
                                         <?php
-                                        if ($prod->get_price()==0){ 
+                                        if ($prod->get_price()==0 || $this->is_product_owned($customer_id, $_product->id)){ 
                                             $downloads = $prod->get_downloads();
                                             foreach( $downloads as $key => $each_download ) {
                                                 echo '<a href="'.$each_download["file"].'">Download</a>';
@@ -595,8 +653,8 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                         </div>
                                         <div>
                                             <input id="upload_image_button-'.$index.'" type="button" class="button" value="Upload Article PDF" />
-                                            <input type="hiddenXX" name="image_attachment_id" id="article_attachment_id-'  .$index. '" value="" required>
-                                            <input type="hiddenXX" name="image_attachment_url" id="article_attachment_url-'.$index. '" value="" required>
+                                            <input type="hiddenXX" name="image_attachment_id" id="article_attachment_id-'  .$index. '" value="" >
+                                            <input type="hiddenXX" name="image_attachment_url" id="article_attachment_url-'.$index. '" value="" >
                                         </div>
     
                                         <div class="form-group row">

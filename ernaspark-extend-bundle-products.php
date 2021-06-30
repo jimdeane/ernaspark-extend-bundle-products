@@ -146,7 +146,10 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                     $productBlockType = $this->get_product_block_type($prod);?>
                                     <br>
                                     <h4 class="es_article_region">
-                                        <?PHP echo($displayRegion) ?>
+                                        <?PHP 
+                                        if($displayRegion <> "none"){
+                                            echo($displayRegion);
+                                        }?>
                                     </h4>						
                                     <div class="wcbp_loop">
                                         <div class="wcbp_prod_addon 
@@ -162,24 +165,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                                 </span><span>Select</span>
                                                 <?php 
                                             }?>
-                                            <div class="wcbp-title">
-                                                <h4><?php
-                                                    if($productBlockType == 'section'){
-                                                        echo esc_html($prod->get_short_description(). ' ');
-                                                    }  ?>
-                                                </h4>
-                                            </div>
-                                        </div>
-                                        <div class="es_article_description">
-                                                <?PHP echo ($prod->get_description()); ?>
-                                        </div>
-                                        <div class="es_article_author_name">
-                                                <?PHP echo (get_post_meta($_product->id, 'author_name', true)); ?>
-                                        </div>
-                                        <div class="es_author_positon">
-                                                <?PHP echo (get_post_meta($_product->id, 'author_position', true)); ?>
-                                        </div>									
-                                        <div class="details">
+                                            <div class="details">
                                             <span class="wcbp-title">																										
                                             <?php  
                                             if ( get_post_meta($prod_id, 'wcbp_disable_bundle_tems_link', true) == 'no') {
@@ -200,8 +186,26 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                                     <?php esc_html_e('Out of stock', 'wc-bundle'); ?>
                                                 </p>
                                             <?php } ?>
-                                        </div>							
-                                    <div id="xxxxxx" hidden style="border-style: solid; border-color: red; border-width: 2px">
+                                        </div>			
+                                            <div class="wcbp-title">
+                                                <h4><?php
+                                                    if($productBlockType == 'section'){
+                                                        echo esc_html($prod->get_short_description(). ' ');
+                                                    }  ?>
+                                                </h4>
+                                            </div>
+                                        </div>
+                                        <div class="es_article_description">
+                                                <?PHP echo ($prod->get_description()); ?>
+                                        </div>
+                                        <div class="es_article_author_name">
+                                                <?PHP echo (get_post_meta($_product->id, 'author_name', true)); ?>
+                                        </div>
+                                        <div class="es_author_position">
+                                                <?PHP echo (get_post_meta($_product->id, 'author_position', true)); ?>
+                                        </div>									
+                                        				
+                                    <div hidden style="border-style: solid; border-color: red; border-width: 2px">
                                     <?php 
                                     $qty = $prod->get_min_purchase_quantity();
                                     if ( isset( $_POST['wcbp_bundle_products_nonce'] ) && wp_verify_nonce( wc_clean($_POST['wcbp_bundle_products_nonce']), 'wcbp_bundle_products_nonce' ) ) {
@@ -215,7 +219,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                             'input_value' => $qty,
                                         ));
                                     } 
-                                    ?></div><div id="yyyyyyy">
+                                    ?></div><div>
                                     <?php
                                     if ($prod->get_price()==0 || $this->is_product_owned($customer_id, $_product->id)){ 
                                         $downloads = $prod->get_downloads();
@@ -224,7 +228,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
                                         }
                                     }
                                     else{ ?>
-                                        <span id="zzzzz" class="wcbp-price"><?php echo esc_html(get_woocommerce_currency_symbol()); ?><span class="price"><?php echo esc_html(number_format($prod->get_price(), 2, '.', '')); ?></span></span>
+                                        <span class="wcbp-price"><?php echo esc_html(get_woocommerce_currency_symbol()); ?><span class="price"><?php echo esc_html(number_format($prod->get_price(), 2, '.', '')); ?></span></span>
                                         <input hidden type="checkbox" name="prod_<?php echo esc_attr($prod->get_id()); ?>" id="cp_prod_<?php echo esc_attr($prod->get_id()); ?>" data-product-id="<?php echo esc_attr($prod->get_id()); ?>">
                                         <span hidden class="es_article_select">Select</span>
                                         <?PHP
@@ -279,7 +283,7 @@ if (in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_
             }
             public function get_product_block_type($prod){
                 $terms = wp_get_post_terms($prod->get_id(),"product_cat");
-                                $productBlockType = "none";
+                                $productBlockType = "";
                                 $countOfCategories = 0;
                                 foreach($terms as $category){
                                     if($category->name == "Publications"){

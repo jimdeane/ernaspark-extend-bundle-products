@@ -19,7 +19,7 @@ namespace Ernaspark_Extend_Bundle_Products;
  *
  * License: GNU General Public License v3.0
  * License URI: http://www.gnu.org/licenses/gpl-3.0.html
- */
+ */  
 if (!defined('ABSPATH')) {
     exit; // Exit if accessed directly.
 } //!defined('ABSPATH')

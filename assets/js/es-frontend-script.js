@@ -17,10 +17,12 @@ function wcpb_may_be_disable_btn() {
         }
     });
     console.log(qty);
+    let mainProductSelect = jQuery("#main_product_select").prop("checked");
     if (
-        jQuery("#wcbp_product_bundle_ids").val() != "" &&
-        parseInt(wcbp.options.bundle_min) <= parseInt(items) &&
-        parseInt(wcbp.options.products_minimum_qty) <= parseInt(qty)
+        (jQuery("#wcbp_product_bundle_ids").val() != ""
+            && parseInt(wcbp.options.bundle_min) <= parseInt(items)
+            && parseInt(wcbp.options.products_minimum_qty) <= parseInt(qty)
+        ) || mainProductSelect
     ) {
         console.log(items);
         console.log("enable");
@@ -45,6 +47,7 @@ jQuery(document).ready(function ($) {
         itemSelector: ".wcbp_col_3",
         //columnWidth: 200
     });
+    console.log('wcbp.options ');
     console.log(wcbp.options);
     wcpb_may_be_disable_btn();
 
@@ -52,41 +55,45 @@ jQuery(document).ready(function ($) {
         var temp = 0;
         var price = 0;
         var qty = 1;
-        var mainProductSelect = jQuery("#main_product_select").attr("checked");
+        var mainProductSelect = jQuery("#main_product_select").prop("checked");
+
         var bundle_ids = jQuery("#wcbp_product_bundle_ids");
         if (jQuery("#wcbp_product_bundle_ids").val()) {
             var ids = jQuery("#wcbp_product_bundle_ids").val().split(",");
             if (wcbp.options.pricing !== "fixed_pricing") {
-                if (wcbp.options.pricing === "per_product_bundle")
-                    price = parseFloat(wcbp.options.bundle_price);
-                jQuery.each(ids, function (key, item) {
-                    if (wcbp.options[item] && wcbp.options[item].price) {
-                        temp = wcbp.options[item].price;
-                        if (
-                            jQuery(".wcbp_product_addons .wcbp_loop").length > 0
-                        ) {
+                if (wcbp.options.pricing === "per_product_bundle" || wcbp.options.pricing === "per_product_only"){
+                    bundlePrice = parseFloat(wcbp.options.bundle_price);
+                    if(mainProductSelect) {
+                        price = parseFloat(bundlePrice)
+                    }
+                }
+                
+                // jQuery.each(ids, function (key, item) {
+                for (let i in ids) {
+                    if (wcbp.options[ids[i]] && wcbp.options[ids[i]].price) {
+                        temp = wcbp.options[ids[i]].price;
+
+                        if ( jQuery(".wcbp_product_addons .wcbp_loop").length > 0 ) {
                             qty = jQuery(".wcbp_product_addons")
-                                .find(
-                                    '.quantity input[name="product_' +
-                                        item +
-                                        '"]'
-                                )
+                                .find('.quantity input[name="product_' + ids[i] + '"]' )
                                 .val();
-                            console.log(qty);
+
                             if (qty) temp = parseFloat(temp) * parseInt(qty);
                         }
+
                         price = parseFloat(price) + parseFloat(temp);
+
                         price = price.toFixed(2);
                         jQuery(
                             ".wcpb_bundle_total .wcpb_bundle_price .wcpb_bundle_price"
                         ).html(price);
                     }
-                });
-                jQuery(".wcpb_bundle_total").show();
+                };
+                // jQuery(".wcpb_bundle_total").show();
             }
         } else {
             if (wcbp.options.pricing !== "fixed_pricing") {
-                if (wcbp.options.pricing === "per_product_bundle")
+                if (wcbp.options.pricing === "per_product_bundle"|| wcbp.options.pricing === "per_product_only")
                     price = parseFloat(wcbp.options.bundle_price);
                 price = price.toFixed(2);
                 jQuery(
@@ -116,8 +123,14 @@ jQuery(document).ready(function ($) {
         function (e) {
             var select = jQuery(this);
             if (select.attr("id") == "main_product_select") {
-                console.debug("main body sselect");
+                console.log("main body select");
+                var productId = $('#wcbp_main_product_id').val();
+            } else {
+                productid = "";
+
             }
+            wcbp_refresh_price();
+
             if (select.is(":checked")) {
                 var prod_id = select.attr("data-product-id");
                 var product_ids = jQuery("#wcbp_product_bundle_ids").val();
